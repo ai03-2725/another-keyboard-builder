@@ -152,9 +152,15 @@ def make_stab_cutout(x, y):
 		modelspace.add_line((x - Decimal('3.5'), y - Decimal('14.7046')), (x + Decimal('3.5'), y - Decimal('14.7046')))
 		modelspace.add_line((x - Decimal('3.5'), y + Decimal('0.2954')), (x - Decimal('3.5'), y - Decimal('14.7046')))
 		modelspace.add_line((x + Decimal('3.5'), y + Decimal('0.2954')), (x + Decimal('3.5'), y - Decimal('14.7046')))
+	elif (stab_type == "alps"):
+		# Rectangles 2.67 wide, 5.21 high.
+		modelspace.add_line((x - Decimal('1.335'), y), (x + Decimal('1.335'), y))
+		modelspace.add_line((x - Decimal('1.335'), y - Decimal('5.21')), (x + Decimal('1.335'), y - Decimal('5.21')))
+		modelspace.add_line((x - Decimal('1.335'), y), (x - Decimal('5.21'), y - Decimal('5.21')))
+		modelspace.add_line((x + Decimal('1.335'), y), (x + Decimal('5.21'), y - Decimal('5.21')))
 	else:
 		print("Unsupported stab type.", file=sys.stderr)
-		print("Stab types: mx, mx-simple, ai-angled, large-cuts", file=sys.stderr)
+		print("Stab types: mx, mx-simple, ai-angled, large-cuts, alps", file=sys.stderr)
 		exit(1)
 	
 # Korean cuts maker
@@ -173,12 +179,16 @@ def make_korean_cuts(x, y):
 	
 # Calls make stab cutout based on unit width and style
 def generate_stabs(x, y, unitwidth):
+
+	center_x = x + (cutout_width / Decimal('2'))
+
+	if (debug_log):
+		print("Genstabs: width " + str(unitwidth))
+
 	if (stab_type == "mx-simple" or stab_type == "mx" or stab_type == "ai-angled" or stab_type == "large-cuts"):
 		stab_y = y - Decimal('1.2954')
-		center_x = x + (cutout_width / Decimal('2'))
-		if (debug_log):
-			print("Genstabs: width " + str(unitwidth))
 		# Switch based on unit width
+		# These spacings are based on official mx datasheets and deskthority measurements
 		if (unitwidth >= 8): 
 			make_stab_cutout(center_x + Decimal('66.675'), stab_y)
 			make_stab_cutout(center_x - Decimal('66.675'), stab_y)
@@ -204,9 +214,23 @@ def generate_stabs(x, y, unitwidth):
 			if (koreancuts_type == "typical" or (koreancuts_type == "extreme")):
 				make_korean_cuts(center_x + Decimal('11.6'), y)
 				make_korean_cuts(center_x - Decimal('11.6'), y)
-	#elif (stab_type == "alps"):
-		
-	
+	elif (stab_type == "alps"):
+		# These are mostly based on measurements. 
+		# If someone has datasheets, please let me know
+		stab_y = y - Decimal('10.273')
+		if (unitwidth >= 6.5): 
+			make_stab_cutout(center_x + Decimal('45.3'), stab_y)
+			make_stab_cutout(center_x - Decimal('45.3'), stab_y)
+		elif (unitwidth >= 6.25): 
+			make_stab_cutout(center_x + Decimal('41.86'), stab_y)
+			make_stab_cutout(center_x - Decimal('41.86'), stab_y)
+		elif (unitwidth >= 2): 
+			make_stab_cutout(center_x + Decimal('14'), stab_y)
+			make_stab_cutout(center_x - Decimal('14'), stab_y)
+		elif (unitwidth >= 1.75): 
+			make_stab_cutout(center_x + Decimal('12'), stab_y)
+			make_stab_cutout(center_x - Decimal('12'), stab_y)
+			
 #== The code
 
 # Generate switch cutout sizes

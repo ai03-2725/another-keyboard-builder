@@ -1,8 +1,10 @@
 import ezdxf
 import sys
-import re
+
 
 from decimal import *
+
+
 
 # Set up decimal
 getcontext().prec = 10;
@@ -21,8 +23,8 @@ cutout_type = "mx"
 # Cutout radius: The fillet radius
 cutout_radius = Decimal('0.5')
 
-# Stab type: mx, mx-simple
-stab_type = "mx"
+# Stab type: mx, mx-simple, ai-angled
+stab_type = "ai-angled"
 
 # Korean cuts: The cutouts typically found on kustoms beside the switches.
 # This script only handles the thin short cuts vertically beside each switch cut, not the large ones, i.e. between fn row and alphas.
@@ -55,7 +57,7 @@ debug_matrix_data = """
 """
 
 
-#== Runtime-modified variables
+#== Create a bunch of runtime-modified variables
 
 
 # Current x/y coordinates
@@ -118,14 +120,13 @@ def is_a_number(s):
 
 def make_stab_cutout(x, y):
 	if (stab_type == "mx-simple"):
-		# Rectangular simplified
+		# Rectangular simplified mx cutout.
 		modelspace.add_line((x - Decimal('3.3274'), y), (x + Decimal('3.3274'), y))
 		modelspace.add_line((x - Decimal('3.3274'), y - Decimal('13.462')), (x + Decimal('3.3274'), y - Decimal('13.462')))
 		modelspace.add_line((x - Decimal('3.3274'), y), (x - Decimal('3.3274'), y - Decimal('13.462')))
 		modelspace.add_line((x + Decimal('3.3274'), y), (x + Decimal('3.3274'), y - Decimal('13.462')))
 	elif (stab_type == "mx"):
-		# Proper MX
-		# Do X first, then Y second
+		# Proper MX based on datasheet.
 		modelspace.add_line((x - Decimal('3.3274'), y), (x + Decimal('3.3274'), y))
 		modelspace.add_line((x - Decimal('3.3274'), y - Decimal('12.2936')), (x - Decimal('1.8034'), y - Decimal('12.2936')))
 		modelspace.add_line((x + Decimal('3.3274'), y - Decimal('12.2936')), (x + Decimal('1.8034'), y - Decimal('12.2936')))
@@ -135,6 +136,16 @@ def make_stab_cutout(x, y):
 		modelspace.add_line((x + Decimal('3.3274'), y), (x + Decimal('3.3274'), y - Decimal('12.2936')))
 		modelspace.add_line((x - Decimal('1.8034'), y - Decimal('12.2936')), (x - Decimal('1.8034'), y - Decimal('13.462')))
 		modelspace.add_line((x + Decimal('1.8034'), y - Decimal('12.2936')), (x + Decimal('1.8034'), y - Decimal('13.462')))
+	elif (stab_type == "ai-angled"):
+		# A sleek cutout with diagonal cuts on bottom. Higher origin y coordinate by 0.3mm to account for a 0.5mm fillet.
+		modelspace.add_line((x - Decimal('3.3274'), y + Decimal('0.3')), (x + Decimal('3.3274'), y + Decimal('0.3')))
+		modelspace.add_line((x - Decimal('2.159'), y - Decimal('13.462')), (x + Decimal('2.159'), y - Decimal('13.462')))
+		
+		modelspace.add_line((x - Decimal('3.3274'), y - Decimal('12.2936')), (x - Decimal('2.159'), y - Decimal('13.462')))
+		modelspace.add_line((x + Decimal('3.3274'), y - Decimal('12.2936')), (x + Decimal('2.159'), y - Decimal('13.462')))
+		
+		modelspace.add_line((x - Decimal('3.3274'), y + Decimal('0.3')), (x - Decimal('3.3274'), y - Decimal('12.2936')))
+		modelspace.add_line((x + Decimal('3.3274'), y + Decimal('0.3')), (x + Decimal('3.3274'), y - Decimal('12.2936')))
 		
 	else:
 		print("Unsupported stab type.", file=sys.stderr)
@@ -157,7 +168,7 @@ def make_korean_cuts(x, y):
 	
 # Calls make stab cutout based on unit width and style
 def generate_stabs(x, y, unitwidth):
-	if (stab_type == "mx-simple" or stab_type == "mx"):
+	if (stab_type == "mx-simple" or stab_type == "mx" or stab_type == "ai-angled"):
 		stab_y = y - Decimal('1.2954')
 		center_x = x + (cutout_width / Decimal('2'))
 		if (debug_log):

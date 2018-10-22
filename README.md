@@ -9,4 +9,12 @@ Alternate generators don't have either the features or exactness that designers 
 - A variety of cutout options to meet the requirements of each plate.
 - Exactness. No more 13.99999mm or 14.00001mm cutouts; this generator will always use exact, accurate dimensions.
 
+### Todo
+- Rotated switch/stabilizer support.
+- Stabilizer cutout filleting.
+- More stabilizer cutout options.
+- More switch cutout options.
+- Alps stabilizers.
+- ISO, bigass enter support.
+
 Some features to be based on https://github.com/swill/kad in the future.

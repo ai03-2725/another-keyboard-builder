@@ -17,6 +17,7 @@ modelspace = plate.modelspace()
 cutout_type = "mx"
 cutout_radius = Decimal('0.5')
 stab_type = "mx"
+koreancuts_type = "typical"
 
 # Unit size (i.e. 1U = 19.05mm)
 unit_width = Decimal('19.05')
@@ -125,6 +126,20 @@ def make_stab_cutout(x, y):
 		print("Stab types: mx, mx-simple", file=sys.stderr)
 		exit(1)
 	
+# Korean cuts maker
+# Same dimensions method as stab cutout maker
+
+def make_korean_cuts(x, y):
+		
+		modelspace.add_arc((x - Decimal('1') + cutout_radius, y - cutout_radius), cutout_radius, 90, 180)
+		modelspace.add_arc((x + Decimal('1') - cutout_radius, y - cutout_radius), cutout_radius, 0, 90)
+		modelspace.add_arc((x - Decimal('1') + cutout_radius, y - cutout_height + cutout_radius), cutout_radius, 180, 270)
+		modelspace.add_arc((x + Decimal('1') - cutout_radius, y - cutout_height + cutout_radius), cutout_radius, 270, 360)
+		modelspace.add_line((x - Decimal('1'), y - cutout_radius), (x - Decimal('1'), y - cutout_height + cutout_radius))
+		modelspace.add_line((x + Decimal('1'), y - cutout_radius), (x + Decimal('1'), y - cutout_height + cutout_radius))
+		modelspace.add_line((x - Decimal('1') + cutout_radius, y), (x + Decimal('1') - cutout_radius, y))
+		modelspace.add_line((x - Decimal('1') + cutout_radius, y - cutout_height), (x + Decimal('1') - cutout_radius, y - cutout_height))
+	
 # Calls make stab cutout based on unit width and style
 def generate_stabs(x, y, unitwidth):
 	if (stab_type == "mx-simple" or stab_type == "mx"):
@@ -151,8 +166,13 @@ def generate_stabs(x, y, unitwidth):
 		elif (unitwidth >= 2): 
 			make_stab_cutout(center_x + Decimal('11.938'), stab_y)
 			make_stab_cutout(center_x - Decimal('11.938'), stab_y)
-		
-	
+			if (koreancuts_type == "extreme"):
+				make_korean_cuts(center_x + Decimal('18.25'), y)
+				make_korean_cuts(center_x - Decimal('18.25'), y)
+		elif (unitwidth >= 1.5):
+			if (koreancuts_type == "typical" or (koreancuts_type == "extreme")):
+				make_korean_cuts(center_x + Decimal('11.6'), y)
+				make_korean_cuts(center_x - Decimal('11.6'), y)
 	
 #== The code
 

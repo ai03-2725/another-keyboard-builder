@@ -71,21 +71,18 @@ def make_key_outline(x, y, width, height):
 
 	# Draw sides - top, bottom, left, right
 	modelspace.add_line((x, y), (x + (width * unit_width), y))
-	modelspace.add_line((x, y + (height * unit_height), (x + (width * unit_width), y + (height * unit_height))))
-	modelspace.add_line((x, y), (x, y + (height * unit_height)))
-	modelspace.add_line((x + (width * unit_width), y), (x + (width * unit_width), y + (height * unit_height)))
+	modelspace.add_line((x, y - (height * unit_height)), (x + (width * unit_width), y - (height * unit_height)))
+	modelspace.add_line((x, y), (x, y - (height * unit_height)))
+	modelspace.add_line((x + (width * unit_width), y), (x + (width * unit_width), y - (height * unit_height)))
 	
 # Check if string is valid number
 # Credits to https://stackoverflow.com/questions/4138202/using-isdigit-for-floats
 def is_a_number(s):
-
 	return_value = True
-	
-    try:
+	try:
 		test_float = float(s)
 	except ValueError:
 		return_value = False
-		
 	return return_value
 	
 #== The code
@@ -141,6 +138,7 @@ for c in input_data:
 		in_row = False
 		# Move down a row
 		current_y -= unit_height;
+		current_x = Decimal('0');
 	
 	elif (c == '{' and not in_label):
 		# We have entered a switch data section!
@@ -169,6 +167,7 @@ for c in input_data:
 				exit()
 		
 			current_width = Decimal(parsing_string)
+			parsing_string = ""
 			parsing_width = False
 		
 		elif (parsing_height):
@@ -180,6 +179,7 @@ for c in input_data:
 				exit()
 		
 			current_height = Decimal(parsing_string)
+			parsing_string = ""
 			parsing_height = False
 		
 		in_data = False
@@ -200,7 +200,7 @@ for c in input_data:
 				if (debug_draw_key_outline):
 					make_key_outline(current_x, current_y, current_width, current_height)
 				# Now we draw the switch cutout
-				make_cutout(current_x + ((current_width - cutout_width) / Decimal('2')), current_y - ((current_height - cutout_height) / Decimal('2')))
+				make_cutout(current_x + (((current_width * unit_width) - cutout_width) / Decimal('2')), current_y - (((current_height * unit_height) - cutout_height) / Decimal('2')))
 				# Move current coords over:
 				current_x += current_width * unit_width;
 				# And reset size to normal:
@@ -245,6 +245,7 @@ for c in input_data:
 				exit()
 		
 			current_width = Decimal(parsing_string)
+			parsing_string = ""
 			parsing_width = False
 			
 		elif (parsing_height):
@@ -256,6 +257,7 @@ for c in input_data:
 				exit()
 		
 			current_height = Decimal(parsing_string)
+			parsing_string = ""
 			parsing_height = False
 			
 	else:

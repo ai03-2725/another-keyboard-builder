@@ -1,5 +1,6 @@
 import ezdxf
 import sys
+import re
 
 from decimal import *
 
@@ -70,11 +71,23 @@ def make_key_outline(x, y, width, height):
 
 	# Draw sides - top, bottom, left, right
 	modelspace.add_line((x, y), (x + (width * unit_width), y))
-	modelspace.add_line((x, y + (height * unit_height), (x + (width * unit_width), y + (height * unit_height)))
+	modelspace.add_line((x, y + (height * unit_height), (x + (width * unit_width), y + (height * unit_height))))
 	modelspace.add_line((x, y), (x, y + (height * unit_height)))
 	modelspace.add_line((x + (width * unit_width), y), (x + (width * unit_width), y + (height * unit_height)))
 	
+# Check if string is valid number
+# Credits to https://stackoverflow.com/questions/4138202/using-isdigit-for-floats
+def is_a_number(s):
 
+	return_value = True
+	
+    try:
+		test_float = float(s)
+	except ValueError:
+		return_value = False
+		
+	return return_value
+	
 #== The code
 
 # Generate switch cutout sizes
@@ -109,7 +122,7 @@ current_height = Decimal(1)
 # Act upon the input data
 for c in input_data:
 
-	if (c == '[' && not in_label):
+	if (c == '[' and not in_label):
 		# We have entered a row!
 		# If already in a row, bad formatting!
 		if(in_row):
@@ -118,7 +131,7 @@ for c in input_data:
 		
 		in_row = True
 	
-	elif (c == ']' && not in_label):
+	elif (c == ']' and not in_label):
 		# We have finished a row!
 		# If not in a row, bad formatting!
 		if(not in_row):
@@ -129,7 +142,7 @@ for c in input_data:
 		# Move down a row
 		current_y -= unit_height;
 	
-	elif (c == '{' && not in_label):
+	elif (c == '{' and not in_label):
 		# We have entered a switch data section!
 		# If are already parsing, bad data!
 		if(in_data):
@@ -138,7 +151,7 @@ for c in input_data:
 		
 		in_data = True
 	
-	elif (c == '}' && not in_label):
+	elif (c == '}' and not in_label):
 		# We have finished a switch data section!
 		# If are not already parsing, bad data!
 		if(not in_data):
@@ -150,7 +163,8 @@ for c in input_data:
 		if (parsing_width):
 		
 			# Verify that it is a digit
-			if (not current_width.isdigit()):
+			if (not is_a_number(parsing_string)):
+				print(parsing_string)
 				print("Malformed input: width input isn't a digit", file=sys.stderr)
 				exit()
 		
@@ -160,7 +174,8 @@ for c in input_data:
 		elif (parsing_height):
 		
 			# Verify that it is a digit
-			if (not current_height.isdigit()):
+			if (not is_a_number(parsing_string)):
+				print(parsing_string)
 				print("Malformed input: height input isn't a digit", file=sys.stderr)
 				exit()
 		
@@ -192,23 +207,23 @@ for c in input_data:
 				current_width = Decimal(1);
 				current_height = Decimal(1);
 		
-	elif (c == 'w' && in_data):
+	elif (c == 'w' and in_data):
 		# Width data.
 		# Begin parsing
 		
 		#But if already parsing sth else, malformed string
-		if (parsing_width || parsing_height):
+		if (parsing_width or parsing_height):
 			print("Malformed input: width begins when already parsing size variable", file=sys.stderr)
 			exit()
 		
 		parsing_width = True
 		
-	elif (c == 'h' && in_data):
+	elif (c == 'h' and in_data):
 		# Width data.
 		# Begin parsing
 		
 		#But if already parsing sth else, malformed string
-		if (parsing_width || parsing_height):
+		if (parsing_width or parsing_height):
 			print("Malformed input: height begins when already parsing size variable", file=sys.stderr)
 			exit()
 		
@@ -216,6 +231,7 @@ for c in input_data:
 		
 	elif (c == ':'):
 		# We absolutely ignore colons, since the other filters handle the rest.
+		continue
 	
 	elif (c == ','):
 		# Commas are used for determining end of data only.
@@ -223,7 +239,8 @@ for c in input_data:
 		if (parsing_width):
 			
 			# Verify that it is a digit
-			if (not current_width.isdigit()):
+			if (not is_a_number(parsing_string)):
+				print(parsing_string)
 				print("Malformed input: width input isn't a digit", file=sys.stderr)
 				exit()
 		
@@ -233,7 +250,8 @@ for c in input_data:
 		elif (parsing_height):
 		
 			# Verify that it is a digit
-			if (not current_height.isdigit()):
+			if (not is_a_number(parsing_string)):
+				print(parsing_string)
 				print("Malformed input: height input isn't a digit", file=sys.stderr)
 				exit()
 		
@@ -242,11 +260,11 @@ for c in input_data:
 			
 	else:
 		# Otherwise, if we're parsing data, add it on
-		if (parsing_width || parsing_height):
+		if (parsing_width or parsing_height):
 			parsing_string += c
 			
 # At this point we should be done. Are we?
-if (in_row || in_data || in_label || parsing_width || parsing_height):
+if (in_row or in_data or in_label or parsing_width or parsing_height):
 	print("Malformed input: Ends abruptly", file=sys.stderr)
 	exit()
 	

@@ -23,7 +23,7 @@ cutout_type = "mx"
 # Cutout radius: The fillet radius
 cutout_radius = Decimal('0.5')
 
-# Stab type: mx, mx-simple, ai-angled, large-cuts, alps
+# Stab type: mx, mx-simple, ai-angled, large-cuts, alps-aek, alps-at101
 stab_type = "large-cuts"
 
 # Korean cuts: The cutouts typically found on kustoms beside the switches.
@@ -155,7 +155,7 @@ def make_stab_cutout(x, y):
 		modelspace.add_line((x - Decimal('3.5'), y - Decimal('14.7046')), (x + Decimal('3.5'), y - Decimal('14.7046')))
 		modelspace.add_line((x - Decimal('3.5'), y + Decimal('0.2954')), (x - Decimal('3.5'), y - Decimal('14.7046')))
 		modelspace.add_line((x + Decimal('3.5'), y + Decimal('0.2954')), (x + Decimal('3.5'), y - Decimal('14.7046')))
-	elif (stab_type == "alps"):
+	elif (stab_type == "alps-aek" or stab_type == "alps-at101"):
 		# Rectangles 2.67 wide, 5.21 high.
 		modelspace.add_line((x - Decimal('1.335'), y), (x + Decimal('1.335'), y))
 		modelspace.add_line((x - Decimal('1.335'), y - Decimal('5.21')), (x + Decimal('1.335'), y - Decimal('5.21')))
@@ -163,7 +163,7 @@ def make_stab_cutout(x, y):
 		modelspace.add_line((x + Decimal('1.335'), y), (x + Decimal('5.21'), y - Decimal('5.21')))
 	else:
 		print("Unsupported stab type.", file=sys.stderr)
-		print("Stab types: mx, mx-simple, ai-angled, large-cuts, alps", file=sys.stderr)
+		print("Stab types: mx, mx-simple, ai-angled, large-cuts, alps-aek, alps-at101", file=sys.stderr)
 		exit(1)
 	
 # Korean cuts maker
@@ -217,7 +217,7 @@ def generate_stabs(x, y, unitwidth):
 			if (koreancuts_type == "typical" or (koreancuts_type == "extreme")):
 				make_korean_cuts(center_x + Decimal('11.6'), y)
 				make_korean_cuts(center_x - Decimal('11.6'), y)
-	elif (stab_type == "alps"):
+	elif (stab_type == "alps-aek"):
 		# These are mostly based on measurements. 
 		# If someone has datasheets, please let me know
 		stab_y = y - Decimal('10.273')
@@ -227,6 +227,25 @@ def generate_stabs(x, y, unitwidth):
 		elif (unitwidth >= 6.25): 
 			make_stab_cutout(center_x + Decimal('41.86'), stab_y)
 			make_stab_cutout(center_x - Decimal('41.86'), stab_y)
+		elif (unitwidth >= 2): 
+			make_stab_cutout(center_x + Decimal('14'), stab_y)
+			make_stab_cutout(center_x - Decimal('14'), stab_y)
+		elif (unitwidth >= 1.75): 
+			make_stab_cutout(center_x + Decimal('12'), stab_y)
+			make_stab_cutout(center_x - Decimal('12'), stab_y)
+	elif (stab_type == "alps-at101"):
+		# These are mostly based on measurements. 
+		# If someone has datasheets, please let me know
+		stab_y = y - Decimal('10.273')
+		if (unitwidth >= 6.5): 
+			make_stab_cutout(center_x + Decimal('45.3'), stab_y)
+			make_stab_cutout(center_x - Decimal('45.3'), stab_y)
+		elif (unitwidth >= 6.25): 
+			make_stab_cutout(center_x + Decimal('41.86'), stab_y)
+			make_stab_cutout(center_x - Decimal('41.86'), stab_y)]
+		elif (unitwidth >= 2.75): 
+			make_stab_cutout(center_x + Decimal('20.5'), stab_y)
+			make_stab_cutout(center_x - Decimal('20.5'), stab_y)
 		elif (unitwidth >= 2): 
 			make_stab_cutout(center_x + Decimal('14'), stab_y)
 			make_stab_cutout(center_x - Decimal('14'), stab_y)

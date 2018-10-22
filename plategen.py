@@ -13,10 +13,20 @@ modelspace = plate.modelspace()
 #== Argument variables
 
 
-# Cutout parameters
+#! Cutout parameters !
+
+# Cutout type: mx, alps
 cutout_type = "mx"
+
+# Cutout radius: The fillet radius
 cutout_radius = Decimal('0.5')
+
+# Stab type: mx, mx-simple
 stab_type = "mx"
+
+# Korean cuts: The cutouts typically found on kustoms beside the switches.
+# This script only handles the thin short cuts vertically beside each switch cut, not the large ones, i.e. between fn row and alphas.
+# none = disabled, typical = 1.5-1.75U only, extreme = On 1.5-2.75U
 koreancuts_type = "typical"
 
 # Unit size (i.e. 1U = 19.05mm)
@@ -26,12 +36,13 @@ unit_height = Decimal('19.05')
 # Output settings
 filename = "plate"
 
-# Debug parameters:
+#! Debug parameters !
+
 # Draw key outlines?
 debug_draw_key_outline = False
-# Use generic matrix?
+# Use generic matrix specified in debug_matrix_data below?
 debug_use_generic_matrix = True
-# Tell user what's going on when generating?
+# Tell user everything about what's going on and spam the console?
 debug_log = True
 # Debug matrix data
 debug_matrix_data = """

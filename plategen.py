@@ -23,8 +23,8 @@ cutout_type = "mx"
 # Cutout radius: The fillet radius
 cutout_radius = Decimal('0.5')
 
-# Stab type: mx, mx-simple, ai-angled
-stab_type = "ai-angled"
+# Stab type: mx, mx-simple, ai-angled, large-cuts
+stab_type = "large-cuts"
 
 # Korean cuts: The cutouts typically found on kustoms beside the switches.
 # This script only handles the thin short cuts vertically beside each switch cut, not the large ones, i.e. between fn row and alphas.
@@ -146,10 +146,15 @@ def make_stab_cutout(x, y):
 		
 		modelspace.add_line((x - Decimal('3.3274'), y + Decimal('0.3')), (x - Decimal('3.3274'), y - Decimal('12.2936')))
 		modelspace.add_line((x + Decimal('3.3274'), y + Decimal('0.3')), (x + Decimal('3.3274'), y - Decimal('12.2936')))
-		
+	elif (stab_type == "large-cuts"):
+		# Large, spacious 15x7 cutouts; 1mm from mx switch cutout top
+		modelspace.add_line((x - Decimal('3.5'), y + Decimal('0.2954')), (x + Decimal('3.5'), y + Decimal('0.2954')))
+		modelspace.add_line((x - Decimal('3.5'), y - Decimal('14.7046')), (x + Decimal('3.5'), y - Decimal('14.7046')))
+		modelspace.add_line((x - Decimal('3.5'), y + Decimal('0.2954')), (x - Decimal('3.5'), y - Decimal('14.7046')))
+		modelspace.add_line((x + Decimal('3.5'), y + Decimal('0.2954')), (x + Decimal('3.5'), y - Decimal('14.7046')))
 	else:
 		print("Unsupported stab type.", file=sys.stderr)
-		print("Stab types: mx, mx-simple", file=sys.stderr)
+		print("Stab types: mx, mx-simple, ai-angled, large-cuts", file=sys.stderr)
 		exit(1)
 	
 # Korean cuts maker
@@ -168,7 +173,7 @@ def make_korean_cuts(x, y):
 	
 # Calls make stab cutout based on unit width and style
 def generate_stabs(x, y, unitwidth):
-	if (stab_type == "mx-simple" or stab_type == "mx" or stab_type == "ai-angled"):
+	if (stab_type == "mx-simple" or stab_type == "mx" or stab_type == "ai-angled" or stab_type == "large-cuts"):
 		stab_y = y - Decimal('1.2954')
 		center_x = x + (cutout_width / Decimal('2'))
 		if (debug_log):
@@ -199,6 +204,8 @@ def generate_stabs(x, y, unitwidth):
 			if (koreancuts_type == "typical" or (koreancuts_type == "extreme")):
 				make_korean_cuts(center_x + Decimal('11.6'), y)
 				make_korean_cuts(center_x - Decimal('11.6'), y)
+	#elif (stab_type == "alps"):
+		
 	
 #== The code
 

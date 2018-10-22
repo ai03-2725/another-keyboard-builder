@@ -23,6 +23,9 @@ koreancuts_type = "typical"
 unit_width = Decimal('19.05')
 unit_height = Decimal('19.05')
 
+# Output settings
+filename = "plate"
+
 # Debug parameters:
 # Draw key outlines?
 debug_draw_key_outline = False
@@ -44,12 +47,12 @@ debug_matrix_data = """
 
 
 # Current x/y coordinates
-current_x = Decimal(0)
-current_y = Decimal(0)
+current_x = Decimal('0')
+current_y = Decimal('0')
 
 # Cutout sizes
-cutout_width = Decimal(0)
-cutout_height = Decimal(0)
+cutout_width = Decimal('0')
+cutout_height = Decimal('0')
 
 # Input data
 input_data = ""
@@ -214,10 +217,10 @@ parsing_width = False
 parsing_height = False
 parsing_string = ""
 in_label = False
-current_width = Decimal(1)
-current_height = Decimal(1)
-max_width = Decimal(0)
-max_height = Decimal(0)
+current_width = Decimal('1')
+current_height = Decimal('1')
+max_width = Decimal('0')
+max_height = Decimal('0')
 	
 # Act upon the input data
 for c in input_data:
@@ -450,4 +453,7 @@ modelspace.add_line((0,max_height), (max_width, max_height))
 modelspace.add_line((0,0), (0, max_height))
 modelspace.add_line((max_width,0), (max_width, max_height))
 	
-plate.saveas('plate.dxf')
+if (debug_log):
+	print("Complete! Saving plate as " + filename + ".dxf")
+	
+plate.saveas(filename + '.dxf')

@@ -23,7 +23,7 @@ cutout_type = "mx"
 # Cutout radius: The fillet radius
 cutout_radius = Decimal('0.5')
 
-# Stab type: mx, mx-simple, ai-angled, large-cuts
+# Stab type: mx, mx-simple, ai-angled, large-cuts, alps
 stab_type = "large-cuts"
 
 # Korean cuts: The cutouts typically found on kustoms beside the switches.
@@ -47,6 +47,8 @@ debug_draw_key_outline = False
 debug_use_generic_matrix = False
 # Tell user everything about what's going on and spam the console?
 debug_log = False
+# Write incomplete dxf if end of input data is reached unexpectedly while parsing?
+debug_write_incomplete = False
 # Debug matrix data
 debug_matrix_data = """
 [{a:7},"","","","","","","","","","","","","",{w:2},""],
@@ -127,6 +129,7 @@ def make_stab_cutout(x, y):
 		modelspace.add_line((x + Decimal('3.3274'), y), (x + Decimal('3.3274'), y - Decimal('13.462')))
 	elif (stab_type == "mx"):
 		# Proper MX based on datasheet.
+		# DOES NOT INCLUDE PLATE MOUNT since basically nobody uses plate mount stabs
 		modelspace.add_line((x - Decimal('3.3274'), y), (x + Decimal('3.3274'), y))
 		modelspace.add_line((x - Decimal('3.3274'), y - Decimal('12.2936')), (x - Decimal('1.8034'), y - Decimal('12.2936')))
 		modelspace.add_line((x + Decimal('3.3274'), y - Decimal('12.2936')), (x + Decimal('1.8034'), y - Decimal('12.2936')))
@@ -502,7 +505,9 @@ if (in_row or in_data or in_label or parsing_width or parsing_height):
 	print(parsing_string, file=sys.stderr)
 	print("Malformed input: Ends abruptly", file=sys.stderr)
 	
-	plate.saveas('error-plate.dxf')
+	if (debug_write_incomplete):
+		print("Saving incomplete plate to error-plate.dxf", file=sys.stderr)
+		plate.saveas('error-plate.dxf')
 	
 	exit(1)
 	

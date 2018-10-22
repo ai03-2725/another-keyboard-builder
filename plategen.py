@@ -182,7 +182,7 @@ for c in input_data:
 			parsing_width = False
 			
 			if (debug_log):
-				print("Bracket closed while parsing width. Width set to " + current_width)
+				print("Bracket closed while parsing width. Width set to " + str(current_width))
 		
 		elif (parsing_height):
 		
@@ -197,7 +197,7 @@ for c in input_data:
 			parsing_height = False
 			
 			if (debug_log):
-				print("Bracket closed while parsing height. Height set to " + current_height)
+				print("Bracket closed while parsing height. Height set to " + str(current_height))
 		
 		in_data = False
 	
@@ -283,7 +283,7 @@ for c in input_data:
 			parsing_width = False
 			
 			if (debug_log):
-				print("Width parsed, set to " + current_width)
+				print("Width parsed, set to " + str(current_width))
 			
 		elif (parsing_height):
 		
@@ -298,7 +298,7 @@ for c in input_data:
 			parsing_height = False
 			
 			if (debug_log):
-				print("Height parsed, set to " + current_height)
+				print("Height parsed, set to " + str(current_height))
 			
 	else:
 		# Otherwise, if we're parsing data, add it on

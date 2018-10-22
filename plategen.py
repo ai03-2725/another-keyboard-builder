@@ -1,21 +1,35 @@
+#=================================#
+#        Plate Generator          #
+#=================================#
+
+# By ai03
+# Credits to
+# Senter for stab measurements
+# Pwner for large stabilizer cutouts
+# Deskthority for spacebar measurements
+# Mxblue, Bakingpy for assistance
+
+#=================================#
+#         Initialization          #
+#=================================#
+
+# Import necessities
 import ezdxf
 import sys
-
-
 from decimal import *
-
-
 
 # Set up decimal
 getcontext().prec = 10;
 
+# Create blank dxf workspace
 plate = ezdxf.new(dxfversion='AC1024')
 modelspace = plate.modelspace()
 
-#== Argument variables
+#=================================#
+#           Parameters            #
+#=================================#
 
-
-#! Cutout parameters !
+#== Cutout parameters ==#
 
 # Cutout type: mx, alps
 cutout_type = "mx"
@@ -39,7 +53,7 @@ unit_height = Decimal('19.05')
 output_method = "stdout"
 filename = "plate"
 
-#! Debug parameters !
+#== Debug parameters ==#
 
 # Draw key outlines?
 debug_draw_key_outline = False
@@ -58,8 +72,9 @@ debug_matrix_data = """
 [{w:1.25},"",{w:1.25},"",{w:1.25},"",{w:6.25},"",{w:1.25},"",{w:1.25},"",{w:1.25},"",{w:1.25},""]
 """
 
-
-#== Create a bunch of runtime-modified variables
+#=================================#
+#         Runtime Vars            #
+#=================================#
 
 
 # Current x/y coordinates
@@ -73,8 +88,9 @@ cutout_height = Decimal('0')
 # Input data
 input_data = ""
 
-#== Defined functions
-
+#=================================#
+#           Functions             #
+#=================================#
 
 # Cutout maker
 def make_cutout(x, y):
@@ -253,7 +269,9 @@ def generate_stabs(x, y, unitwidth):
 			make_stab_cutout(center_x + Decimal('12'), stab_y)
 			make_stab_cutout(center_x - Decimal('12'), stab_y)
 			
-#== The code
+#=================================#
+#         Plate Creation          #
+#=================================#
 
 # Generate switch cutout sizes
 if (cutout_type == "mx"):

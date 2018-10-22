@@ -26,12 +26,14 @@ unit_height = Decimal('19.05')
 debug_draw_key_outline = True
 # Use generic matrix?
 debug_use_generic_matrix = True
+# Tell user what's going on when generating?
+debug_log = True
 # Debug matrix data
-debug_matrix_data = """[{a:7,w:1.75},"","",{w:1.75},"","",{w:1.75},""],
-["",{w:1.75},"","",{w:1.75},"",""],
-[{w:1.75},"","",{w:1.75},"","",{w:1.75},""],
-["",{w:1.75},"","",{w:1.75},"",""],
-[{w:1.75},"","",{w:1.75},"","",{w:1.75},""]"""
+debug_matrix_data = """["~\n`","!\n1","@\n2","#\n3","$\n4","%\n5","^\n6","&\n7","*\n8","(\n9",")\n0","_\n-","+\n=",{w:2},"Backspace"],
+[{w:1.5},"Tab","Q","W","E","R","T","Y","U","I","O","P","{\n[","}\n]",{w:1.5},"|\n\\"],
+[{w:1.75},"Caps Lock","A","S","D","F","G","H","J","K","L",":\n;","\"\n'",{w:2.25},"Enter"],
+[{w:2.25},"Shift","Z","X","C","V","B","N","M","<\n,",">\n.","?\n/",{w:2.75},"Shift"],
+[{w:1.25},"Ctrl",{w:1.25},"Win",{w:1.25},"Alt",{a:7,w:6.25},"",{a:4,w:1.25},"Alt",{w:1.25},"Win",{w:1.25},"Menu",{w:1.25},"Ctrl"]"""
 
 
 #== Runtime-modified variables
@@ -127,6 +129,9 @@ for c in input_data:
 			exit()
 		
 		in_row = True
+		
+		if (debug_log):
+			print("Beginning row")
 	
 	elif (c == ']' and not in_label):
 		# We have finished a row!
@@ -139,6 +144,9 @@ for c in input_data:
 		# Move down a row
 		current_y -= unit_height;
 		current_x = Decimal('0');
+		
+		if (debug_log):
+			print("Row end, moving down")
 	
 	elif (c == '{' and not in_label):
 		# We have entered a switch data section!
@@ -148,6 +156,9 @@ for c in input_data:
 			exit()
 		
 		in_data = True
+		
+		if (debug_log):
+			print("Beginning data brackets")
 	
 	elif (c == '}' and not in_label):
 		# We have finished a switch data section!
@@ -169,6 +180,9 @@ for c in input_data:
 			current_width = Decimal(parsing_string)
 			parsing_string = ""
 			parsing_width = False
+			
+			if (debug_log):
+				print("Bracket closed while parsing width. Width set to " + current_width)
 		
 		elif (parsing_height):
 		
@@ -181,6 +195,9 @@ for c in input_data:
 			current_height = Decimal(parsing_string)
 			parsing_string = ""
 			parsing_height = False
+			
+			if (debug_log):
+				print("Bracket closed while parsing height. Height set to " + current_height)
 		
 		in_data = False
 	
@@ -193,6 +210,10 @@ for c in input_data:
 			if (not in_label):
 				# Label begins
 				in_label = True
+				
+				if (debug_log):
+					print("Beginning label")
+				
 			else:
 				# If a label ends, it means it's time to draw the switch.
 				in_label = False
@@ -206,6 +227,9 @@ for c in input_data:
 				# And reset size to normal:
 				current_width = Decimal(1);
 				current_height = Decimal(1);
+				
+				if (debug_log):
+					print("Ended label, drew switch")
 		
 	elif (c == 'w' and in_data):
 		# Width data.
@@ -218,6 +242,9 @@ for c in input_data:
 		
 		parsing_width = True
 		
+		if (debug_log):
+			print("Beginning width parse")
+		
 	elif (c == 'h' and in_data):
 		# Width data.
 		# Begin parsing
@@ -229,8 +256,15 @@ for c in input_data:
 		
 		parsing_height = True
 		
+		if (debug_log):
+			print("Beginning height parse")
+		
 	elif (c == ':'):
 		# We absolutely ignore colons, since the other filters handle the rest.
+		
+		if (debug_log):
+			print("Ignoring colon")
+		
 		continue
 	
 	elif (c == ','):
@@ -248,6 +282,9 @@ for c in input_data:
 			parsing_string = ""
 			parsing_width = False
 			
+			if (debug_log):
+				print("Width parsed, set to " + current_width)
+			
 		elif (parsing_height):
 		
 			# Verify that it is a digit
@@ -260,14 +297,29 @@ for c in input_data:
 			parsing_string = ""
 			parsing_height = False
 			
+			if (debug_log):
+				print("Height parsed, set to " + current_height)
+			
 	else:
 		# Otherwise, if we're parsing data, add it on
 		if (parsing_width or parsing_height):
 			parsing_string += c
 			
+			if (debug_log):
+				print("Appending " + c + " to parsing text")
+				
+		else:
+		
+			if (debug_log):
+				print("Ignoring " + c)
+				
+			continue
+			
 # At this point we should be done. Are we?
 if (in_row or in_data or in_label or parsing_width or parsing_height):
+	print(parsing_string, file=sys.stderr)
 	print("Malformed input: Ends abruptly", file=sys.stderr)
+	
 	exit()
 	
 plate.saveas('plate.dxf')

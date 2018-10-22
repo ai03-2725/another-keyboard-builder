@@ -33,7 +33,8 @@ koreancuts_type = "typical"
 unit_width = Decimal('19.05')
 unit_height = Decimal('19.05')
 
-# Output settings
+# Output settings. Method can be file or stdout. Filename is ignored if output_method is set to stdout
+output_method = "stdout"
 filename = "plate"
 
 #! Debug parameters !
@@ -41,9 +42,9 @@ filename = "plate"
 # Draw key outlines?
 debug_draw_key_outline = False
 # Use generic matrix specified in debug_matrix_data below?
-debug_use_generic_matrix = True
+debug_use_generic_matrix = False
 # Tell user everything about what's going on and spam the console?
-debug_log = True
+debug_log = False
 # Debug matrix data
 debug_matrix_data = """
 [{a:7},"","","","","","","","","","","","","",{w:2},""],
@@ -198,10 +199,15 @@ elif (cutout_type == "alps"):
 	cutout_width = Decimal('15.50');
 	cutout_height = Decimal('12.80');
 else:
-	print("Unsupported cutout type.")
-	print("Supported: mx, alps")
+	print("Unsupported cutout type.", file=sys.stderr)
+	print("Supported: mx, alps", file=sys.stderr)
 	exit(1)
 
+# Check if output method is legal
+if (output_method != "stdout" and output_method != "file"):
+	print("Unsupported output method specified", file=sys.stderr)
+	exit(1)
+	
 # If debug matrix is on, make sth generic
 if (debug_use_generic_matrix):
 	input_data = debug_matrix_data
@@ -465,6 +471,11 @@ modelspace.add_line((0,0), (0, max_height))
 modelspace.add_line((max_width,0), (max_width, max_height))
 	
 if (debug_log):
-	print("Complete! Saving plate as " + filename + ".dxf")
-	
-plate.saveas(filename + '.dxf')
+	print("Complete! Saving plate to specified output")
+
+if (output_method == "file"):
+	plate.saveas(filename + '.dxf')
+else:
+	plate.write(sys.stdout)
+
+exit()

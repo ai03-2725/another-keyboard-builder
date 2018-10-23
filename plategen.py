@@ -366,6 +366,14 @@ json_data = json5.loads('[' + input_data + ']')
 for row in json_data:
 	if (debug_log):
 		print (">>> ROW BEGIN")
+		print (str(row))
+	
+	# KLE standard supports first row being metadata.
+	# If it is, ignore.
+	if isinstance(row, dict):
+		if (debug_log):
+			print ("!!! Row is metadata. Skip.")
+		continue
 	for key in row:
 		# The "key" can either be a legend (actual key) or dictionary of data (for succeeding key).
 		
@@ -473,7 +481,8 @@ modelspace.add_line((max_width,0), (max_width, current_y))
 
 # Now render each switch
 
-
+#for current_switch in all_switches:
+	
 
 	
 if (debug_log):

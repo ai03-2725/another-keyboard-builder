@@ -16,6 +16,7 @@
 # Import necessities
 import ezdxf
 import sys
+import json5
 from decimal import *
 
 # Set up decimal
@@ -32,13 +33,13 @@ modelspace = plate.modelspace()
 #== Cutout parameters ==#
 
 # Cutout type: mx, alps
-cutout_type = "mx"
+cutout_type = "alps"
 
 # Cutout radius: The fillet radius
 cutout_radius = Decimal('0.5')
 
 # Stab type: mx, mx-simple, ai-angled, large-cuts, alps-aek, alps-at101
-stab_type = "large-cuts"
+stab_type = "alps-at101"
 
 # Korean cuts: The cutouts typically found on kustoms beside the switches.
 # This script only handles the thin short cuts vertically beside each switch cut, not the large ones, i.e. between fn row and alphas.
@@ -88,6 +89,37 @@ cutout_height = Decimal('0')
 # Input data
 input_data = ""
 
+# Used for parsing
+current_width = Decimal('1')
+current_height = Decimal('1')
+current_width_secondary = Decimal('1')
+current_height_secondary = Decimal('1')
+current_rotx = Decimal('0')
+current_roty = Decimal('0')
+current_angle = Decimal('0')
+current_stab_angle = Decimal('0')
+current_cutout_angle = Decimal('0')
+
+#=================================#
+#            Classes              #
+#=================================#
+
+class Switch:
+	
+	def __init__(self, x_var, y_var):
+		# These fields correspond to the respective kle data
+		self.x = x_var
+		self.y = y_var
+		self.width = 1
+		self.height = 1
+		self.width_secondary = 1
+		self.height_secondary = 1
+		self.rotx = 0
+		self.roty = 0
+		self.angle = 0
+		self.cutout_angle = 0
+		self.stab_angle = 0
+	
 #=================================#
 #           Functions             #
 #=================================#
@@ -175,8 +207,8 @@ def make_stab_cutout(x, y):
 		# Rectangles 2.67 wide, 5.21 high.
 		modelspace.add_line((x - Decimal('1.335'), y), (x + Decimal('1.335'), y))
 		modelspace.add_line((x - Decimal('1.335'), y - Decimal('5.21')), (x + Decimal('1.335'), y - Decimal('5.21')))
-		modelspace.add_line((x - Decimal('1.335'), y), (x - Decimal('5.21'), y - Decimal('5.21')))
-		modelspace.add_line((x + Decimal('1.335'), y), (x + Decimal('5.21'), y - Decimal('5.21')))
+		modelspace.add_line((x - Decimal('1.335'), y), (x - Decimal('1.335'), y - Decimal('5.21')))
+		modelspace.add_line((x + Decimal('1.335'), y), (x + Decimal('1.335'), y - Decimal('5.21')))
 	else:
 		print("Unsupported stab type.", file=sys.stderr)
 		print("Stab types: mx, mx-simple, ai-angled, large-cuts, alps-aek, alps-at101", file=sys.stderr)
@@ -258,7 +290,7 @@ def generate_stabs(x, y, unitwidth):
 			make_stab_cutout(center_x - Decimal('45.3'), stab_y)
 		elif (unitwidth >= 6.25): 
 			make_stab_cutout(center_x + Decimal('41.86'), stab_y)
-			make_stab_cutout(center_x - Decimal('41.86'), stab_y)]
+			make_stab_cutout(center_x - Decimal('41.86'), stab_y)
 		elif (unitwidth >= 2.75): 
 			make_stab_cutout(center_x + Decimal('20.5'), stab_y)
 			make_stab_cutout(center_x - Decimal('20.5'), stab_y)
@@ -268,6 +300,19 @@ def generate_stabs(x, y, unitwidth):
 		elif (unitwidth >= 1.75): 
 			make_stab_cutout(center_x + Decimal('12'), stab_y)
 			make_stab_cutout(center_x - Decimal('12'), stab_y)
+			
+# Reset key default parameters
+def reset_key_parameters():
+	current_width = Decimal('1')
+	current_height = Decimal('1')
+	current_width_secondary = Decimal('1')
+	current_height_secondary = Decimal('1')
+	current_rotx = Decimal('0')
+	current_roty = Decimal('0')
+	current_angle = Decimal('0')
+	current_stab_angle = Decimal('0')
+	current_cutout_angle = Decimal('0')
+			
 			
 #=================================#
 #         Plate Creation          #
@@ -298,8 +343,8 @@ else:
 	input_data = sys.stdin.read()
 	
 # Sanitize by removing \" (KLE's literal " for a label)
-input_data = input_data.replace('\n', '')
-input_data = input_data.replace(r'\"', '')
+#input_data = input_data.replace('\n', '')
+#input_data = input_data.replace(r'\"', '')
 
 # TODO: Filter out improper quotes from " being in a label!
 
@@ -308,251 +353,128 @@ if (debug_log):
 	print(input_data)
 	print("")
 
+# REDO OF PARSER
 
-# Make some variables
-in_row = False
-in_data = False
-parsing_width = False
-parsing_height = False
-parsing_string = ""
-in_label = False
-current_width = Decimal('1')
-current_height = Decimal('1')
+current_x = Decimal('0')
+current_y = Decimal('0')
 max_width = Decimal('0')
-max_height = Decimal('0')
-	
-# Act upon the input data
-for c in input_data:
 
-	if (c == '[' and not in_label):
-		# We have entered a row!
-		# If already in a row, bad formatting!
-		if(in_row):
-			print("Malformed input: Row in a row", file=sys.stderr)
-			exit(1)
+all_switches = []
+
+json_data = json5.loads('[' + input_data + ']')
+
+for row in json_data:
+	if (debug_log):
+		print (">>> ROW BEGIN")
+	for key in row:
+		# The "key" can either be a legend (actual key) or dictionary of data (for succeeding key).
 		
-		in_row = True
+		# If it's just a string, it's just a key. Create one and add to list
+		if isinstance(key, str):
 		
-		if (debug_log):
-			print("Beginning row")
-	
-	elif (c == ']' and not in_label):
-		# We have finished a row!
-		# If not in a row, bad formatting!
-		if(not in_row):
-			print("Malformed input: Row ends outside a row", file=sys.stderr)
-			exit(1)
-		
-		in_row = False
-		
-		# Move down a row
-		current_y -= unit_height;
-		
-		# Check for max width/height for drawing outlines
-		if (current_x > max_width):
-			max_width = current_x
-		
-		if (abs(current_y) > abs(max_height)):
-			max_height = current_y
-		
-		# Reset x to 0
-		current_x = Decimal('0');
-		
-		if (debug_log):
-			print("Row end, moving down")
-	
-	elif (c == '{' and not in_label):
-		# We have entered a switch data section!
-		# If are already parsing, bad data!
-		if(in_data):
-			print("Malformed input: data begins in data", file=sys.stderr)
-			exit(1)
-		
-		in_data = True
-		
-		if (debug_log):
-			print("Beginning data brackets")
-	
-	elif (c == '}' and not in_label):
-		# We have finished a switch data section!
-		# If are not already parsing, bad data!
-		if(not in_data):
-			print("Malformed input: data ends outside of data", file=sys.stderr)
-			exit(1)
+			# First, we simply make the switch
+			current_switch = Switch(current_x, current_y)
 			
-		# We could have been parsing a width or height.
-		# If so, apply changes.
-		if (parsing_width):
-		
-			# Verify that it is a digit
-			if (not is_a_number(parsing_string)):
-				print(parsing_string)
-				print("Malformed input: width input isn't a digit", file=sys.stderr)
-				exit(1)
-		
-			current_width = Decimal(parsing_string)
-			parsing_string = ""
-			parsing_width = False
+			# Then, adjust the x coord for next switch
+			current_x += unit_width * current_width
+			# If this is a record, update properly
+			if (max_width < current_x):
+				max_width = current_x
 			
-			if (debug_log):
-				print("Bracket closed while parsing width. Width set to " + str(current_width))
-		
-		elif (parsing_height):
-		
-			# Verify that it is a digit
-			if (not is_a_number(parsing_string)):
-				print(parsing_string)
-				print("Malformed input: height input isn't a digit", file=sys.stderr)
-				exit(1)
-		
-			current_height = Decimal(parsing_string)
-			parsing_string = ""
-			parsing_height = False
+			# And we adjust the fields as necessary.
+			# These default to 1 unless edited by a data field preceding
+			current_switch.width = current_width
+			current_switch.height = current_height
+			current_switch.width_secondary = current_width_secondary
+			current_switch.height_secondary = current_height_secondary
+			current_switch.rotx = current_rotx
+			current_switch.roty = current_roty
+			current_switch.angle = current_angle
+			current_switch.stab_angle = current_stab_angle
+			current_switch.cutout_angle = current_cutout_angle
 			
-			if (debug_log):
-				print("Bracket closed while parsing height. Height set to " + str(current_height))
-		
-		in_data = False
-	
-	elif (c == '"'):
-		# We are in a switch label, or leaving one!
-		# The label is what constitutes the existence of a key.
-		
-		# Occasionally it's a thing such as p:"DCS" in the data brackets, so if so, ignore.
-		if (not in_data):
-			if (not in_label):
-				# Label begins
-				in_label = True
-				
-				if (debug_log):
-					print("Beginning label")
-				
-			else:
-				# If a label ends, it means it's time to draw the switch.
-				in_label = False
-				# Draw key outline?
-				if (debug_draw_key_outline):
-					make_key_outline(current_x, current_y, current_width, current_height)
-				# Now we draw the switch cutout
-				cutout_corner_x = current_x + (((current_width * unit_width) - cutout_width) / Decimal('2'))
-				cutout_corner_y = current_y - (((current_height * unit_height) - cutout_height) / Decimal('2'))
-				make_cutout(cutout_corner_x, cutout_corner_y)
-				
-				# Generate stabs
-				generate_stabs(cutout_corner_x, cutout_corner_y, current_width)
-				
-				# Move current coords over:
-				current_x += current_width * unit_width;
-				# And reset size to normal:
-				current_width = Decimal(1);
-				current_height = Decimal(1);
-				
-				if (debug_log):
-					print("Ended label, drew switch.")
-				
-		
-	elif (c == 'w' and in_data):
-		# Width data.
-		# Begin parsing
-		
-		#But if already parsing sth else, malformed string
-		if (parsing_width or parsing_height):
-			print("Malformed input: width begins when already parsing size variable", file=sys.stderr)
-			exit(1)
-		
-		parsing_width = True
-		
-		if (debug_log):
-			print("Beginning width parse")
-		
-	elif (c == 'h' and in_data):
-		# Width data.
-		# Begin parsing
-		
-		#But if already parsing sth else, malformed string
-		if (parsing_width or parsing_height):
-			print("Malformed input: height begins when already parsing size variable", file=sys.stderr)
-			exit(1)
-		
-		parsing_height = True
-		
-		if (debug_log):
-			print("Beginning height parse")
-		
-	elif (c == ':'):
-		# We absolutely ignore colons, since the other filters handle the rest.
-		
-		if (debug_log):
-			print("Ignoring colon")
-		
-		continue
-	
-	elif (c == ','):
-		# Commas are used for determining end of data only.
-		
-		if (parsing_width):
+			# Deal with some certain cases
 			
-			# Verify that it is a digit
-			if (not is_a_number(parsing_string)):
-				print(parsing_string)
-				print("Malformed input: width input isn't a digit", file=sys.stderr)
-				exit(1)
-		
-			current_width = Decimal(parsing_string)
-			parsing_string = ""
-			parsing_width = False
+			# For example, vertical keys created by stretching height to be larger than width
+			# The key's cutout angle and stab angle should be offset by 90 degrees to compensate.
+			# This effectively transforms the key to a vertical
+			# This also handles ISO
+			if (current_width < current_height and current_height >= 2):
+				current_cutout_angle -= Decimal('90')
+				current_stab_angle -= Decimal('90')		
 			
-			if (debug_log):
-				print("Width parsed, set to " + str(current_width))
+			all_switches.append(current_switch)
 			
-		elif (parsing_height):
-		
-			# Verify that it is a digit
-			if (not is_a_number(parsing_string)):
-				print(parsing_string)
-				print("Malformed input: height input isn't a digit", file=sys.stderr)
-				exit(1)
-		
-			current_height = Decimal(parsing_string)
-			parsing_string = ""
-			parsing_height = False
+			# Reset the fields to their defaults
+			reset_key_parameters()
 			
-			if (debug_log):
-				print("Height parsed, set to " + str(current_height))
-			
-	else:
-		# Otherwise, if we're parsing data, add it on
-		if (parsing_width or parsing_height):
-			parsing_string += c
-			
-			if (debug_log):
-				print("Appending " + c + " to parsing text")
-				
+		# Otherwise, it's a data dictionary. We must parse it properly
 		else:
-		
-			if (debug_log):
-				if(in_label):
-					print("Part of label: " + c)
-				else:
-					print("Ignoring " + c)
-			continue
-			
-# At this point we should be done. Are we?
-if (in_row or in_data or in_label or parsing_width or parsing_height):
-	print(parsing_string, file=sys.stderr)
-	print("Malformed input: Ends abruptly", file=sys.stderr)
-	
-	if (debug_write_incomplete):
-		print("Saving incomplete plate to error-plate.dxf", file=sys.stderr)
-		plate.saveas('error-plate.dxf')
-	
-	exit(1)
-	
+			for i in key:
+				# i = The dictionary key. Not the keyboard kind of key
+				# j = The corresponding value.
+				j = key[i]
+				
+				# Large if-else chain to set params
+				if (str(i) == "w"):
+					# w = Width
+					current_width = Decimal(str(j))
+					
+				elif (str(i) == "h"):
+					# h = Height
+					current_height = Decimal(str(j))
+					
+				elif (str(i) == "w2"):
+					# w2 = Secondary width
+					current_width_secondary = Decimal(str(j))
+					
+				elif (str(i) == "h2"):
+					# h2 = Secondary height
+					current_height_secondary = Decimal(str(j))
+					
+				elif (str(i) == "rx"):
+					# rx = Rotation anchor x
+					current_rotx = Decimal(str(j))
+					
+				elif (str(i) == "ry"):
+					# ry = Rotation anchor y
+					current_roty = Decimal(str(j))
+					
+				elif (str(i) == "r"):
+					# r = Rotation angle OPPOSITE OF typical counterclockwise-from-xpositive
+					current_roty = -Decimal(str(j))
+					
+				elif (str(i) == "_rs"):
+					# _rs = Rotation angle offset for stabilizer OPPOSITE OF typical counterclockwise-from-xpositive
+					current_stab_angle = -Decimal(str(j))
+					
+				elif (str(i) == "_ca"):
+					# _rs = Switch cutout angle offset for stabilizer OPPOSITE OF typical counterclockwise-from-xpositive
+					current_cutout_angle = -Decimal(str(j))
+					
+				if (str(i) == "x"):
+					# x = X offset for next keys
+					current_x += Decimal(str(j))
+					
+				elif (str(i) == "y"):
+					# y = Y offset for next keys
+					current_y += Decimal(str(j))
+	# Finished row
+	current_y -= Decimal('1')
+	current_x = Decimal('0')
+					
+# At this point, the keys are built.
+
 # Draw outer bounds - top, bottom, left, right
 modelspace.add_line((0,0), (max_width, 0))
-modelspace.add_line((0,max_height), (max_width, max_height))
-modelspace.add_line((0,0), (0, max_height))
-modelspace.add_line((max_width,0), (max_width, max_height))
+modelspace.add_line((0,current_y), (max_width, current_y))
+modelspace.add_line((0,0), (0, current_y))
+modelspace.add_line((max_width,0), (max_width, current_y))
+
+# Now render each switch
+
+
+
 	
 if (debug_log):
 	print("Complete! Saving plate to specified output")

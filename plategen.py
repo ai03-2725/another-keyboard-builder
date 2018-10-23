@@ -17,10 +17,15 @@
 import ezdxf
 import sys
 import json5
+import decimal
+
+from mpmath import *
 from decimal import *
 
-# Set up decimal
+# Set up decimal and mpmath
 getcontext().prec = 10;
+mp.dps = 50
+mp.pretty = True
 
 # Create blank dxf workspace
 plate = ezdxf.new(dxfversion='AC1024')
@@ -313,6 +318,16 @@ def reset_key_parameters():
 	current_stab_angle = Decimal('0')
 	current_cutout_angle = Decimal('0')
 			
+# Modifies a point with rotation
+def rotate_point_around_anchor(x, y, anchor_x, anchor_y, angle):
+	radius_squared = decimal.power((x - anchor_x), 2) + decimal.power((y-anchor_y), 2)
+	radius = decimal.sqrt(radius_squared)
+	
+	radian_qty = radians(float(angle))
+	cos_result = cos(radian_qty)
+	sin_result = sin(radian_qty)
+	
+	
 			
 #=================================#
 #         Plate Creation          #

@@ -129,22 +129,9 @@ class Switch:
 #           Functions             #
 #=================================#
 
-# Cutout maker
-def make_cutout(x, y):
 
-	# First draw corners - top left, top right, bottom left, bottom right
-	modelspace.add_arc((x + cutout_radius, y - cutout_radius), cutout_radius, 90, 180)
-	modelspace.add_arc((x + cutout_width - cutout_radius, y - cutout_radius), cutout_radius, 0, 90)
-	modelspace.add_arc((x + cutout_radius, y - cutout_height + cutout_radius), cutout_radius, 180, 270)
-	modelspace.add_arc((x + cutout_width - cutout_radius, y - cutout_height + cutout_radius), cutout_radius, 270, 360)
-	
-	# Then draw sides - top, bottom, left, right
-	modelspace.add_line((x + cutout_radius, y), (x + cutout_width - cutout_radius, y))
-	modelspace.add_line((x + cutout_radius, y - cutout_height), (x + cutout_width - cutout_radius, y - cutout_height))
-	modelspace.add_line((x, y - cutout_radius), (x, y - cutout_height + cutout_radius))
-	modelspace.add_line((x + cutout_width, y - cutout_radius), (x + cutout_width, y - cutout_height + cutout_radius))
-	
 # Key outline maker. Width and height in Units (U)
+# TODO: Fix this
 def make_key_outline(x, y, width, height):
 
 	# Draw sides - top, bottom, left, right
@@ -348,7 +335,32 @@ def draw_rotated_line(x1, y1, x2, y2, anchor_x, anchor_y, angle):
 # Draw arc rotated with respect to an anchor
 def draw_rotated_arc(x, y, anchor_x, anchor_y, radius, angle_start, angle_end, rotation)
 	coords = rotate_point_around_anchor(x, y, anchor_x, anchor_y, rotation)
-	modelspace.add_arc((coords[0], coords[1]), radius, angle_start + rotation, angle_end + rotation)
+	modelspace.add_arc((coords[0], coords[1]), radius, float(angle_start + rotation), float(angle_end + rotation))
+	
+# Draw switch cutout
+def draw_switch_cutout(mm_center_x, mm_center_y, angle):
+	# Make some variables for the sake of legibility
+	mm_y_top = mm_center_y + (unit_height / Decimal('2'));
+	mm_y_bottom = mm_center_y - (unit_height / Decimal('2'));
+	mm_x_left = mm_center_x - (unit_width / Decimal('2'));
+	mm_x_right = mm_center_x + (unit_width / Decimal('2'));
+	
+	# First draw the line segments: top, bottom, left, right
+	draw_rotated_line(mm_x_left + cutout_radius, mm_y_top, mm_x_right - cutout_radius, mm_y_top, 
+	mm_center_x, mm_center_y, angle)
+	draw_rotated_line(mm_x_left + cutout_radius, mm_y_bottom, mm_x_right - cutout_radius, mm_y_bottom, 
+	mm_center_x, mm_center_y, angle)
+	draw_rotated_line(mm_x_left, mm_y_top - cutout_radius, mm_x_left, mm_y_bottom + cutout_radius, 
+	mm_center_x, mm_center_y, angle)
+	draw_rotated_line(mm_x_right, mm_y_top - cutout_radius, mm_x_right, mm_y_bottom + cutout_radius, 
+	mm_center_x, mm_center_y, angle)
+	
+	# Now render corner arcs: top left, top right, bottom left, bottom right
+	draw_rotated_arc(mm_x_left + cutout_radius, mm_y_top - cutout_radius, mm_center_x, mm_center_y, cutout_radius, 90, 180, angle)
+	draw_rotated_arc(mm_x_right - cutout_radius, mm_y_top - cutout_radius, mm_center_x, mm_center_y, cutout_radius, 0, 90, angle)
+	draw_rotated_arc(mm_x_left + cutout_radius, mm_y_bottom + cutout_radius, mm_center_x, mm_center_y, cutout_radius, 180, 270, angle)
+	draw_rotated_arc(mm_x_right - cutout_radius, mm_y_bottom + cutout_radius, mm_center_x, mm_center_y, cutout_radius, 270, 360, angle)
+	
 	
 # Use the functions above to render an entire switch - Cutout, stabs, and all
 def render_switch(switch):
@@ -371,23 +383,9 @@ def render_switch(switch):
 		
 		mm_center_x = rotated_central_coords[0]
 		mm_center_y = rotated_central_coords[1]
-		
-	# Make some variables for the sake of legibility
-	mm_y_top = mm_center_y + (unit_height / Decimal('2'));
-	mm_y_bottom = mm_center_y - (unit_height / Decimal('2'));
-	mm_x_left = mm_center_x - (unit_width / Decimal('2'));
-	mm_x_right = mm_center_x + (unit_width / Decimal('2'));
 	
 	# Now draw the cutouts
-	# First draw the line segments: top, bottom, left, right
-	draw_rotated_line(mm_x_left + cutout_radius, mm_y_top, mm_x_right - cutout_radius, mm_y_top, 
-	mm_center_x, mm_center_y, switch.angle + switch.cutout_angle)
-	draw_rotated_line(mm_x_left + cutout_radius, mm_y_bottom, mm_x_right - cutout_radius, mm_y_bottom, 
-	mm_center_x, mm_center_y, switch.angle + switch.cutout_angle)
-	draw_rotated_line(mm_x_left, mm_y_top - cutout_radius, mm_x_left, mm_y_bottom + cutout_radius, 
-	mm_center_x, mm_center_y, switch.angle + switch.cutout_angle)
-	draw_rotated_line(mm_x_right, mm_y_top - cutout_radius, mm_x_right, mm_y_bottom + cutout_radius, 
-	mm_center_x, mm_center_y, switch.angle + switch.cutout_angle)
+	draw_switch_cutout(mm_center_x, mm_center_y, switch.angle + switch.cutout_angle)
 	
 	
 #=================================#
@@ -548,6 +546,10 @@ for row in json_data:
 	current_x = Decimal('0')
 					
 # At this point, the keys are built.
+# Render each one by one.
+
+for switch in all_switches:
+	render_switch(switch)
 
 # Draw outer bounds - top, bottom, left, right
 modelspace.add_line((0, 0), (max_width * unit_height, 0))

@@ -307,12 +307,12 @@ def reset_key_parameters():
 			
 # Modifies a point with rotation
 def rotate_point_around_anchor(x, y, anchor_x, anchor_y, angle):
-	radius_squared = decimal.power((x - anchor_x), 2) + decimal.power((y-anchor_y), 2)
-	radius = decimal.sqrt(radius_squared)
+	radius_squared = ((x - anchor_x) ** Decimal('2')) + ((y-anchor_y) ** Decimal('2'))
+	radius = Decimal.sqrt(radius_squared)
 	anglefrac = angle.as_integer_ratio()
 	radian_qty = radians(anglefrac[0]/anglefrac[1])
-	cos_result = cos(radian_qty)
-	sin_result = sin(radian_qty)
+	cos_result = Decimal(str(cos(radian_qty)))
+	sin_result = Decimal(str(sin(radian_qty)))
 	
 	old_x = x - anchor_x
 	old_y = y - anchor_y
@@ -333,17 +333,17 @@ def draw_rotated_line(x1, y1, x2, y2, anchor_x, anchor_y, angle):
 	modelspace.add_line((coords_1[0], coords_1[1]), (coords_2[0], coords_2[1]))
 	
 # Draw arc rotated with respect to an anchor
-def draw_rotated_arc(x, y, anchor_x, anchor_y, radius, angle_start, angle_end, rotation)
+def draw_rotated_arc(x, y, anchor_x, anchor_y, radius, angle_start, angle_end, rotation):
 	coords = rotate_point_around_anchor(x, y, anchor_x, anchor_y, rotation)
 	modelspace.add_arc((coords[0], coords[1]), radius, float(angle_start + rotation), float(angle_end + rotation))
 	
 # Draw switch cutout
 def draw_switch_cutout(mm_center_x, mm_center_y, angle):
 	# Make some variables for the sake of legibility
-	mm_y_top = mm_center_y + (unit_height / Decimal('2'));
-	mm_y_bottom = mm_center_y - (unit_height / Decimal('2'));
-	mm_x_left = mm_center_x - (unit_width / Decimal('2'));
-	mm_x_right = mm_center_x + (unit_width / Decimal('2'));
+	mm_y_top = mm_center_y + (cutout_height / Decimal('2'));
+	mm_y_bottom = mm_center_y - (cutout_height / Decimal('2'));
+	mm_x_left = mm_center_x - (cutout_width / Decimal('2'));
+	mm_x_right = mm_center_x + (cutout_width / Decimal('2'));
 	
 	# First draw the line segments: top, bottom, left, right
 	draw_rotated_line(mm_x_left + cutout_radius, mm_y_top, mm_x_right - cutout_radius, mm_y_top, 

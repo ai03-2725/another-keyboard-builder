@@ -375,7 +375,7 @@ def draw_switch_cutout(mm_center_x, mm_center_y, angle):
 	mm_center_x, mm_center_y, angle)
 	
 	# Now render corner arcs: top left, top right, bottom left, bottom right
-	# For some reason all arcs are drawn mirrored vertically, so ghetto fix swapping top and bottom variables without understanding what's going on
+	# Help
 	draw_rotated_arc(mm_x_left + cutout_radius, mm_y_top - cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('90'), Decimal('180'), angle)
 	draw_rotated_arc(mm_x_right - cutout_radius, mm_y_top - cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('0'), Decimal('90'), angle)
 	draw_rotated_arc(mm_x_left + cutout_radius, mm_y_bottom + cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('180'), Decimal('270'), angle)

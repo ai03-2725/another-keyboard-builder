@@ -38,7 +38,7 @@ modelspace = plate.modelspace()
 #== Cutout parameters ==#
 
 # Cutout type: mx, alps
-cutout_type = "mx"
+cutout_type = "alps"
 
 # Cutout radius: The fillet radius ( 0 <= x <= 1/2 cutout width or height )
 cutout_radius = Decimal('0.5')
@@ -64,7 +64,7 @@ filename = "plate"
 # Draw key outlines?
 debug_draw_key_outline = False
 # Use generic matrix specified in debug_matrix_data below?
-debug_use_generic_matrix = True
+debug_use_generic_matrix = False
 # Tell user everything about what's going on and spam the console?
 debug_log = False
 # Write incomplete dxf if end of input data is reached unexpectedly while parsing?
@@ -376,10 +376,10 @@ def draw_switch_cutout(mm_center_x, mm_center_y, angle):
 	
 	# Now render corner arcs: top left, top right, bottom left, bottom right
 	# For some reason all arcs are drawn mirrored vertically, so ghetto fix swapping top and bottom variables without understanding what's going on
-	draw_rotated_arc(mm_x_left + cutout_radius, mm_y_bottom + cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('90'), Decimal('180'), angle)
-	draw_rotated_arc(mm_x_right - cutout_radius, mm_y_bottom + cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('0'), Decimal('90'), angle)
-	draw_rotated_arc(mm_x_left + cutout_radius, mm_y_top - cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('180'), Decimal('270'), angle)
-	draw_rotated_arc(mm_x_right - cutout_radius, mm_y_top - cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('270'), Decimal('360'), angle)
+	draw_rotated_arc(mm_x_left + cutout_radius, mm_y_top - cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('90'), Decimal('180'), angle)
+	draw_rotated_arc(mm_x_right - cutout_radius, mm_y_top - cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('0'), Decimal('90'), angle)
+	draw_rotated_arc(mm_x_left + cutout_radius, mm_y_bottom + cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('180'), Decimal('270'), angle)
+	draw_rotated_arc(mm_x_right - cutout_radius, mm_y_bottom + cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('270'), Decimal('360'), angle)
 	
 	
 # Use the functions above to render an entire switch - Cutout, stabs, and all
@@ -530,8 +530,8 @@ for row in json_data:
 			# This effectively transforms the key to a vertical
 			# This also handles ISO
 			if (current_width < current_height and current_height >= 2):
-				current_cutout_angle -= Decimal('90')
-				current_stab_angle -= Decimal('90')		
+				current_switch.cutout_angle -= Decimal('90')
+				current_switch.stab_angle -= Decimal('90')
 			
 			all_switches.append(current_switch)
 			

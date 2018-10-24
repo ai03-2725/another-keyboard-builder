@@ -336,8 +336,12 @@ def rotate_point_around_anchor(x, y, anchor_x, anchor_y, angle):
 	old_x = x - anchor_x
 	old_y = y - anchor_y
 	
-	new_x = Decimal(str(old_x * cos_result)) - Decimal(str(old_y * sin_result))
-	new_y = Decimal(str(old_x * sin_result)) - Decimal(str(old_y * cos_result))
+	coord = matrix([float(old_x), float(old_y)])
+	transform = matrix([[cos(radian_qty), -sin(radian_qty)], [sin(radian_qty), cos(radian_qty)]])
+	result = transform * coord
+	
+	new_x = Decimal(str(result[0]))
+	new_y = Decimal(str(result[1]))
 	
 	new_x += anchor_x
 	new_y += anchor_y
@@ -385,10 +389,18 @@ def draw_switch_cutout(mm_center_x, mm_center_y, angle):
 # Use the functions above to render an entire switch - Cutout, stabs, and all
 def render_switch(switch):
 	
-	# First, derive mm based on x and y in units
-	mm_x = switch.x * unit_width
-	mm_y = switch.y * unit_height
-	
+	# Coord differs for regular vs rotated
+	if (switch.rotx != 0 or switch.roty != 0 or switch.angle != 0):
+		# rotx and roty are the raw base coords for anchor
+		# Then, upper left is offset from there
+		mm_x = (switch.rotx + switch.offset_x) * unit_width
+		mm_x = (switch.roty + switch.offset_y) * unit_height
+		
+	else:
+		# Otherwise, derive mm based on x and y in units
+		mm_x = switch.x * unit_width
+		mm_y = switch.y * unit_height
+		
 	# Then, derive the center of the switch based on width and height
 	mm_center_x = mm_x + ((switch.width / Decimal('2')) * unit_width)
 	mm_center_y = mm_y - ((switch.height / Decimal('2')) * unit_height)
@@ -462,7 +474,7 @@ if (debug_log):
 	print(input_data)
 	print("")
 
-# REDO OF PARSER
+# Parse KLE data
 
 current_x = Decimal('0')
 current_y = Decimal('0')

@@ -4,10 +4,10 @@
 
 # By ai03
 # Credits to
-# Senter for stab measurements
-# Pwner for large stabilizer cutouts
-# Deskthority for spacebar measurements
-# Mxblue, Bakingpy for assistance
+# Amtra5, Mxblue, Bakingpy for code-side assistance
+# Senter, Pwner, Kevinplus, Deskthority Wiki for measurements
+
+# For a better designer life. Never worry about plate cutouts again.z
 
 #=================================#
 #         Initialization          #
@@ -23,8 +23,8 @@ from mpmath import *
 from decimal import *
 
 # Set up decimal and mpmath
-getcontext().prec = 10;
-mp.dps = 50
+getcontext().prec = 10
+mp.dps = 10
 mp.pretty = True
 
 # Create blank dxf workspace
@@ -64,7 +64,7 @@ filename = "plate"
 # Draw key outlines?
 debug_draw_key_outline = False
 # Use generic matrix specified in debug_matrix_data below?
-debug_use_generic_matrix = False
+debug_use_generic_matrix = True
 # Tell user everything about what's going on and spam the console?
 debug_log = False
 # Write incomplete dxf if end of input data is reached unexpectedly while parsing?
@@ -322,13 +322,34 @@ def reset_key_parameters():
 def rotate_point_around_anchor(x, y, anchor_x, anchor_y, angle):
 	radius_squared = decimal.power((x - anchor_x), 2) + decimal.power((y-anchor_y), 2)
 	radius = decimal.sqrt(radius_squared)
-	
-	radian_qty = radians(float(angle))
+	anglefrac = angle.as_integer_ratio()
+	radian_qty = radians(anglefrac[0]/anglefrac[1])
 	cos_result = cos(radian_qty)
 	sin_result = sin(radian_qty)
 	
+	old_x = x - anchor_x
+	old_y = y - anchor_y
 	
-			
+	new_x = Decimal(str(old_x * cos_result)) - Decimal(str(old_y * sin_result))
+	new_y = Decimal(str(old_x * sin_result)) - Decimal(str(old_y * cos_result))
+	
+	new_x += anchor_x
+	new_y += anchor_y
+	
+	return (new_x, new_y)
+	
+# Draw line segment rotated with respect to an anchor
+def draw_rotated_line(x1, y1, x2, y2, anchor_x, anchor_y, angle):
+	coords_1 = rotate_point_around_anchor(x1, y1, anchor_x, anchor_y, angle)
+	coords_2 = rotate_point_around_anchor(x2, y2, anchor_x, anchor_y, angle)
+	
+	modelspace.add_line((coords_1[0], coords_1[1]), (coords_2[0], coords_2[1]))
+	
+# Draw arc rotated with respect to an anchor
+def draw_rotated_arc(x, y, anchor_x, anchor_y, radius, angle_start, angle_end, rotation)
+	coords = rotate_point_around_anchor(x, y, anchor_x, anchor_y, rotation)
+	modelspace.add_arc((coords[0], coords[1]), radius, angle_start + rotation, angle_end + rotation)
+	
 #=================================#
 #         Plate Creation          #
 #=================================#
@@ -481,7 +502,7 @@ for row in json_data:
 					
 				elif (str(i) == "y"):
 					# y = Y offset for next keys
-					current_y += Decimal(str(j))
+					current_y -= Decimal(str(j))
 	# Finished row
 	current_y -= Decimal('1')
 	current_x = Decimal('0')
@@ -490,9 +511,9 @@ for row in json_data:
 
 # Draw outer bounds - top, bottom, left, right
 modelspace.add_line((0,0), (max_width, 0))
-modelspace.add_line((0,current_y), (max_width, current_y))
-modelspace.add_line((0,0), (0, current_y))
-modelspace.add_line((max_width,0), (max_width, current_y))
+modelspace.add_line((0,current_y * unit_height), (max_width, current_y * unit_height))
+modelspace.add_line((0,0), (0, current_y * unit_height))
+modelspace.add_line((max_width,0), (max_width, current_y * unit_height))
 
 # Now render each switch
 

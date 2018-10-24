@@ -23,8 +23,8 @@ from mpmath import *
 from decimal import *
 
 # Set up decimal and mpmath
-getcontext().prec = 10
-mp.dps = 10
+getcontext().prec = 50
+mp.dps = 50
 mp.pretty = True
 
 # Create blank dxf workspace
@@ -350,6 +350,46 @@ def draw_rotated_arc(x, y, anchor_x, anchor_y, radius, angle_start, angle_end, r
 	coords = rotate_point_around_anchor(x, y, anchor_x, anchor_y, rotation)
 	modelspace.add_arc((coords[0], coords[1]), radius, angle_start + rotation, angle_end + rotation)
 	
+# Use the functions above to render an entire switch - Cutout, stabs, and all
+def render_switch(switch):
+	
+	# First, derive mm based on x and y in units
+	mm_x = switch.x * unit_width
+	mm_y = switch.y * unit_height
+	
+	# Then, derive the center of the switch based on width and height
+	mm_center_x = mm_x + ((switch.width / Decimal('2')) * unit_width)
+	mm_center_y = mm_y - ((switch.height / Decimal('2')) * unit_height)
+	
+	# Then, rotate the points if angle != 0
+	if (switch.angle != 0):
+		rotated_upper_left_coords = rotate_point_around_anchor(mm_x, mm_y, switch.rotx, switch.roty, switch.angle)
+		rotated_central_coords = rotate_point_around_anchor(mm_center_x, mm_center_y, switch.rotx, switch.roty, switch.angle)
+		
+		mm_x = rotated_upper_left_coords[0]
+		mm_y = rotated_upper_left_coords[1]
+		
+		mm_center_x = rotated_central_coords[0]
+		mm_center_y = rotated_central_coords[1]
+		
+	# Make some variables for the sake of legibility
+	mm_y_top = mm_center_y + (unit_height / Decimal('2'));
+	mm_y_bottom = mm_center_y - (unit_height / Decimal('2'));
+	mm_x_left = mm_center_x - (unit_width / Decimal('2'));
+	mm_x_right = mm_center_x + (unit_width / Decimal('2'));
+	
+	# Now draw the cutouts
+	# First draw the line segments: top, bottom, left, right
+	draw_rotated_line(mm_x_left + cutout_radius, mm_y_top, mm_x_right - cutout_radius, mm_y_top, 
+	mm_center_x, mm_center_y, switch.angle + switch.cutout_angle)
+	draw_rotated_line(mm_x_left + cutout_radius, mm_y_bottom, mm_x_right - cutout_radius, mm_y_bottom, 
+	mm_center_x, mm_center_y, switch.angle + switch.cutout_angle)
+	draw_rotated_line(mm_x_left, mm_y_top - cutout_radius, mm_x_left, mm_y_bottom + cutout_radius, 
+	mm_center_x, mm_center_y, switch.angle + switch.cutout_angle)
+	draw_rotated_line(mm_x_right, mm_y_top - cutout_radius, mm_x_right, mm_y_bottom + cutout_radius, 
+	mm_center_x, mm_center_y, switch.angle + switch.cutout_angle)
+	
+	
 #=================================#
 #         Plate Creation          #
 #=================================#
@@ -420,7 +460,7 @@ for row in json_data:
 			current_switch = Switch(current_x, current_y)
 			
 			# Then, adjust the x coord for next switch
-			current_x += unit_width * current_width
+			current_x += current_width
 			# If this is a record, update properly
 			if (max_width < current_x):
 				max_width = current_x
@@ -510,10 +550,10 @@ for row in json_data:
 # At this point, the keys are built.
 
 # Draw outer bounds - top, bottom, left, right
-modelspace.add_line((0,0), (max_width, 0))
-modelspace.add_line((0,current_y * unit_height), (max_width, current_y * unit_height))
-modelspace.add_line((0,0), (0, current_y * unit_height))
-modelspace.add_line((max_width,0), (max_width, current_y * unit_height))
+modelspace.add_line((0, 0), (max_width * unit_height, 0))
+modelspace.add_line((0,current_y * unit_height), (max_width * unit_height, current_y * unit_height))
+modelspace.add_line((0, 0), (0, current_y * unit_height))
+modelspace.add_line((max_width * unit_height, 0), (max_width * unit_height, current_y * unit_height))
 
 # Now render each switch
 

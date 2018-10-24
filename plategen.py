@@ -73,9 +73,10 @@ debug_write_incomplete = False
 debug_matrix_data = """
 [{a:7},"","","","","","","","","","","","","",{w:2},""],
 [{w:1.5},"","","","","","","","","","","","","",{w:1.5},""],
-[{w:1.75},"","","","","","","","","","","","",{w:2.25},""],
+[{w:1.75},"","","","",{x:1},"","","","","","","",{w:2.25},""],
 [{w:2.25},"","","","","","","","","","","",{w:2.75},""],
-[{w:1.25},"",{w:1.25},"",{w:1.25},"",{w:6.25},"",{w:1.25},"",{w:1.25},"",{w:1.25},"",{w:1.25},""]
+[{w:1.25},"",{w:1.25},"",{w:1.25},"",{w:6.25},"",{w:1.25},"",{w:1.25},"",{w:1.25},"",{w:1.25},""],
+[{r:15,rx:5.25,ry:2.5,y:-0.5,x:-0.5},""]
 """
 
 #=================================#
@@ -295,6 +296,16 @@ def generate_stabs(x, y, unitwidth):
 			
 # Reset key default parameters
 def reset_key_parameters():
+	global current_width
+	global current_height
+	global current_width_secondary
+	global current_height_secondary
+	global current_rotx
+	global current_roty
+	global current_angle
+	global current_stab_angle
+	global current_cutout_angle
+	
 	current_width = Decimal('1')
 	current_height = Decimal('1')
 	current_width_secondary = Decimal('1')
@@ -356,10 +367,10 @@ def draw_switch_cutout(mm_center_x, mm_center_y, angle):
 	mm_center_x, mm_center_y, angle)
 	
 	# Now render corner arcs: top left, top right, bottom left, bottom right
-	draw_rotated_arc(mm_x_left + cutout_radius, mm_y_top - cutout_radius, mm_center_x, mm_center_y, cutout_radius, 90, 180, angle)
-	draw_rotated_arc(mm_x_right - cutout_radius, mm_y_top - cutout_radius, mm_center_x, mm_center_y, cutout_radius, 0, 90, angle)
-	draw_rotated_arc(mm_x_left + cutout_radius, mm_y_bottom + cutout_radius, mm_center_x, mm_center_y, cutout_radius, 180, 270, angle)
-	draw_rotated_arc(mm_x_right - cutout_radius, mm_y_bottom + cutout_radius, mm_center_x, mm_center_y, cutout_radius, 270, 360, angle)
+	draw_rotated_arc(mm_x_left + cutout_radius, mm_y_top - cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('90'), Decimal('180'), angle)
+	draw_rotated_arc(mm_x_right - cutout_radius, mm_y_top - cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('0'), Decimal('90'), angle)
+	draw_rotated_arc(mm_x_left + cutout_radius, mm_y_bottom + cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('180'), Decimal('270'), angle)
+	draw_rotated_arc(mm_x_right - cutout_radius, mm_y_bottom + cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('270'), Decimal('360'), angle)
 	
 	
 # Use the functions above to render an entire switch - Cutout, stabs, and all
@@ -374,7 +385,7 @@ def render_switch(switch):
 	mm_center_y = mm_y - ((switch.height / Decimal('2')) * unit_height)
 	
 	# Then, rotate the points if angle != 0
-	if (switch.angle != 0):
+	if (switch.angle != Decimal('0')):
 		rotated_upper_left_coords = rotate_point_around_anchor(mm_x, mm_y, switch.rotx, switch.roty, switch.angle)
 		rotated_central_coords = rotate_point_around_anchor(mm_center_x, mm_center_y, switch.rotx, switch.roty, switch.angle)
 		
@@ -432,6 +443,7 @@ if (debug_log):
 current_x = Decimal('0')
 current_y = Decimal('0')
 max_width = Decimal('0')
+max_height = Decimal('0')
 
 all_switches = []
 
@@ -462,6 +474,8 @@ for row in json_data:
 			# If this is a record, update properly
 			if (max_width < current_x):
 				max_width = current_x
+			if (max_height < current_y + Decimal('1')):
+				max_height = current_y + Decimal('1')
 			
 			# And we adjust the fields as necessary.
 			# These default to 1 unless edited by a data field preceding
@@ -524,7 +538,7 @@ for row in json_data:
 					
 				elif (str(i) == "r"):
 					# r = Rotation angle OPPOSITE OF typical counterclockwise-from-xpositive
-					current_roty = -Decimal(str(j))
+					current_angle = -Decimal(str(j))
 					
 				elif (str(i) == "_rs"):
 					# _rs = Rotation angle offset for stabilizer OPPOSITE OF typical counterclockwise-from-xpositive
@@ -553,9 +567,9 @@ for switch in all_switches:
 
 # Draw outer bounds - top, bottom, left, right
 modelspace.add_line((0, 0), (max_width * unit_height, 0))
-modelspace.add_line((0,current_y * unit_height), (max_width * unit_height, current_y * unit_height))
-modelspace.add_line((0, 0), (0, current_y * unit_height))
-modelspace.add_line((max_width * unit_height, 0), (max_width * unit_height, current_y * unit_height))
+modelspace.add_line((0,max_height * unit_height), (max_width * unit_height, max_height * unit_height))
+modelspace.add_line((0, 0), (0, max_height * unit_height))
+modelspace.add_line((max_width * unit_height, 0), (max_width * unit_height, max_height * unit_height))
 
 # Now render each switch
 

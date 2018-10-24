@@ -38,9 +38,9 @@ modelspace = plate.modelspace()
 #== Cutout parameters ==#
 
 # Cutout type: mx, alps
-cutout_type = "alps"
+cutout_type = "mx"
 
-# Cutout radius: The fillet radius
+# Cutout radius: The fillet radius ( 0 <= x <= 1/2 cutout width or height )
 cutout_radius = Decimal('0.5')
 
 # Stab type: mx, mx-simple, ai-angled, large-cuts, alps-aek, alps-at101
@@ -51,7 +51,7 @@ stab_type = "alps-at101"
 # none = disabled, typical = 1.5-1.75U only, extreme = On 1.5-2.75U
 koreancuts_type = "typical"
 
-# Unit size (i.e. 1U = 19.05mm)
+# Unit size (i.e. 1U = 19.05mm). ( 0 <= x <= inf, cap at 1000 for now )
 unit_width = Decimal('19.05')
 unit_height = Decimal('19.05')
 
@@ -73,10 +73,9 @@ debug_write_incomplete = False
 debug_matrix_data = """
 [{a:7},"","","","","","","","","","","","","",{w:2},""],
 [{w:1.5},"","","","","","","","","","","","","",{w:1.5},""],
-[{w:1.75},"","","","",{x:1},"","","","","","","",{w:2.25},""],
+[{w:1.75},"","","","","","","","","","","","",{w:2.25},""],
 [{w:2.25},"","","","","","","","","","","",{w:2.75},""],
-[{w:1.25},"",{w:1.25},"",{w:1.25},"",{w:6.25},"",{w:1.25},"",{w:1.25},"",{w:1.25},"",{w:1.25},""],
-[{r:15,rx:5.25,ry:2.5,y:-0.5,x:-0.5},""]
+[{w:1.25},"",{w:1.25},"",{w:1.25},"",{w:6.25},"",{w:1.25},"",{w:1.25},"",{w:1.25},"",{w:1.25},""]
 """
 
 #=================================#
@@ -367,10 +366,11 @@ def draw_switch_cutout(mm_center_x, mm_center_y, angle):
 	mm_center_x, mm_center_y, angle)
 	
 	# Now render corner arcs: top left, top right, bottom left, bottom right
-	draw_rotated_arc(mm_x_left + cutout_radius, mm_y_top - cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('90'), Decimal('180'), angle)
-	draw_rotated_arc(mm_x_right - cutout_radius, mm_y_top - cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('0'), Decimal('90'), angle)
-	draw_rotated_arc(mm_x_left + cutout_radius, mm_y_bottom + cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('180'), Decimal('270'), angle)
-	draw_rotated_arc(mm_x_right - cutout_radius, mm_y_bottom + cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('270'), Decimal('360'), angle)
+	# For some reason all arcs are drawn mirrored vertically, so ghetto fix swapping top and bottom variables without understanding what's going on
+	draw_rotated_arc(mm_x_left + cutout_radius, mm_y_bottom + cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('90'), Decimal('180'), angle)
+	draw_rotated_arc(mm_x_right - cutout_radius, mm_y_bottom + cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('0'), Decimal('90'), angle)
+	draw_rotated_arc(mm_x_left + cutout_radius, mm_y_top - cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('180'), Decimal('270'), angle)
+	draw_rotated_arc(mm_x_right - cutout_radius, mm_y_top - cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('270'), Decimal('360'), angle)
 	
 	
 # Use the functions above to render an entire switch - Cutout, stabs, and all
@@ -413,6 +413,21 @@ elif (cutout_type == "alps"):
 else:
 	print("Unsupported cutout type.", file=sys.stderr)
 	print("Supported: mx, alps", file=sys.stderr)
+	exit(1)
+	
+# Check if values legal
+
+# Cutout radius: The fillet radius ( 0 <= x <= 1/2 width or height)
+if (cutout_radius < 0 or cutout_radius > (cutout_width/2) or cutout_radius > (cutout_height/2)) :
+	print("Radius must be between 0 and half the cutout width/height.", file=sys.stderr)
+	exit(1)
+
+# Unit size ( 0 <= x <= inf, cap at 1000 for now )
+if (unit_width < 0 or unit_width > 1000):
+	print("Unit size must be between 0 and 1000", file=sys.stderr)
+	exit(1)
+if (unit_height < 0 or unit_height > 1000):
+	print("Unit size must be between 0 and 1000", file=sys.stderr)
 	exit(1)
 
 # Check if output method is legal
@@ -474,8 +489,8 @@ for row in json_data:
 			# If this is a record, update properly
 			if (max_width < current_x):
 				max_width = current_x
-			if (max_height < current_y + Decimal('1')):
-				max_height = current_y + Decimal('1')
+			if (max_height > current_y - Decimal('1')):
+				max_height = current_y - Decimal('1')
 			
 			# And we adjust the fields as necessary.
 			# These default to 1 unless edited by a data field preceding
@@ -560,14 +575,13 @@ for row in json_data:
 	current_x = Decimal('0')
 					
 # At this point, the keys are built.
-# Render each one by one.
-
+# Render each one by one. 
 for switch in all_switches:
 	render_switch(switch)
 
 # Draw outer bounds - top, bottom, left, right
 modelspace.add_line((0, 0), (max_width * unit_height, 0))
-modelspace.add_line((0,max_height * unit_height), (max_width * unit_height, max_height * unit_height))
+modelspace.add_line((0, max_height * unit_height), (max_width * unit_height, max_height * unit_height))
 modelspace.add_line((0, 0), (0, max_height * unit_height))
 modelspace.add_line((max_width * unit_height, 0), (max_width * unit_height, max_height * unit_height))
 

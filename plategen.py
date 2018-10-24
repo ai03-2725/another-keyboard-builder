@@ -71,11 +71,12 @@ debug_log = False
 debug_write_incomplete = False
 # Debug matrix data
 debug_matrix_data = """
-[{a:7},"","","","","","","","","","","","","",{w:2},""],
+[{x:1,a:7},"","","","","","","","","","","","",{w:2},""],
 [{w:1.5},"","","","","","","","","","","","","",{w:1.5},""],
 [{w:1.75},"","","","","","","","","","","","",{w:2.25},""],
 [{w:2.25},"","","","","","","","","","","",{w:2.75},""],
-[{w:1.25},"",{w:1.25},"",{w:1.25},"",{w:6.25},"",{w:1.25},"",{w:1.25},"",{w:1.25},"",{w:1.25},""]
+[{w:1.25},"",{w:1.25},"",{w:1.25},"",{w:6.25},"",{w:1.25},"",{w:1.25},"",{w:1.25},"",{w:1.25},""],
+[{r:15,rx:0.5,ry:0.5,y:-0.5,x:-0.5},""]
 """
 
 #=================================#
@@ -104,6 +105,8 @@ current_roty = Decimal('0')
 current_angle = Decimal('0')
 current_stab_angle = Decimal('0')
 current_cutout_angle = Decimal('0')
+current_offset_x = Decimal('0')
+current_offset_y = Decimal('0')
 
 #=================================#
 #            Classes              #
@@ -124,6 +127,8 @@ class Switch:
 		self.angle = 0
 		self.cutout_angle = 0
 		self.stab_angle = 0
+		self.offset_x = 0
+		self.offset_y = 0
 	
 #=================================#
 #           Functions             #
@@ -304,6 +309,8 @@ def reset_key_parameters():
 	global current_angle
 	global current_stab_angle
 	global current_cutout_angle
+	global current_offset_x
+	global current_offset_y
 	
 	current_width = Decimal('1')
 	current_height = Decimal('1')
@@ -314,6 +321,8 @@ def reset_key_parameters():
 	current_angle = Decimal('0')
 	current_stab_angle = Decimal('0')
 	current_cutout_angle = Decimal('0')
+	current_offset_x = Decimal('0')
+	current_offset_y = Decimal('0')
 			
 # Modifies a point with rotation
 def rotate_point_around_anchor(x, y, anchor_x, anchor_y, angle):
@@ -504,6 +513,16 @@ for row in json_data:
 			current_switch.stab_angle = current_stab_angle
 			current_switch.cutout_angle = current_cutout_angle
 			
+			# For x and y offset, check if any rotation spec is set.
+			if (current_rotx != 0 or current_roty != 0 or current_angle != 0):
+				# If set, store the value
+				current_switch.offset_x = current_offset_x
+				current_switch.offset_y = current_offset_y
+			else:
+				# Otherwise, append
+				current_x += current_offset_x
+				current_y -= current_offset_y
+			
 			# Deal with some certain cases
 			
 			# For example, vertical keys created by stretching height to be larger than width
@@ -564,12 +583,12 @@ for row in json_data:
 					current_cutout_angle = -Decimal(str(j))
 					
 				if (str(i) == "x"):
-					# x = X offset for next keys
-					current_x += Decimal(str(j))
+					# x = X offset for next keys OR offset from rotation anchor (seriously kle?)
+					current_offset_x = Decimal(str(j))
 					
 				elif (str(i) == "y"):
-					# y = Y offset for next keys
-					current_y -= Decimal(str(j))
+					# y = Y offset for next keys OR offset from rotation anchor (seriously kle?)
+					current_offset_y = Decimal(str(j))
 	# Finished row
 	current_y -= Decimal('1')
 	current_x = Decimal('0')
@@ -584,12 +603,6 @@ modelspace.add_line((0, 0), (max_width * unit_height, 0))
 modelspace.add_line((0, max_height * unit_height), (max_width * unit_height, max_height * unit_height))
 modelspace.add_line((0, 0), (0, max_height * unit_height))
 modelspace.add_line((max_width * unit_height, 0), (max_width * unit_height, max_height * unit_height))
-
-# Now render each switch
-
-#for current_switch in all_switches:
-	
-
 	
 if (debug_log):
 	print("Complete! Saving plate to specified output")

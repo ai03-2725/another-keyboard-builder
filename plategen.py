@@ -383,7 +383,7 @@ class PlateGenerator(object):
 			# rotx and roty are the raw base coords for anchor
 			# Then, upper left is offset from there
 			mm_x = (switch.rotx + switch.offset_x) * self.unit_width
-			mm_x = (switch.roty + switch.offset_y) * self.unit_height
+			mm_y = (switch.roty + switch.offset_y) * self.unit_height
 			
 		else:
 			# Otherwise, derive mm based on x and y in units
@@ -503,6 +503,20 @@ class PlateGenerator(object):
 					# First, we simply make the switch
 					current_switch = self.Switch(self.current_x, self.current_y)
 					
+					# For x and y offset, check if any rotation spec is set.
+					if (self.current_rotx != 0 or self.current_roty != 0 or self.current_angle != 0):
+						# If set, store the value
+						current_switch.offset_x = self.current_offset_x
+						current_switch.offset_y = self.current_offset_y
+					else:
+						# Otherwise, append
+						self.current_x += self.current_offset_x
+						self.current_y -= self.current_offset_y
+						current_switch.x += self.current_offset_x
+						current_switch.y -= self.current_offset_y
+						self.current_offset_x = Decimal('0')
+						self.current_offset_y = Decimal('0')
+					
 					# Then, adjust the x coord for next switch
 					self.current_x += self.current_width
 					# If this is a record, update properly
@@ -522,20 +536,6 @@ class PlateGenerator(object):
 					current_switch.angle = self.current_angle
 					current_switch.stab_angle = self.current_stab_angle
 					current_switch.cutout_angle = self.current_cutout_angle
-					
-					# For x and y offset, check if any rotation spec is set.
-					if (self.current_rotx != 0 or self.current_roty != 0 or self.current_angle != 0):
-						# If set, store the value
-						current_switch.offset_x = self.current_offset_x
-						current_switch.offset_y = self.current_offset_y
-					else:
-						# Otherwise, append
-						self.current_x += self.current_offset_x
-						self.current_y -= self.current_offset_y
-						current_switch.x += self.current_offset_x
-						current_switch.y -= self.current_offset_y
-						self.current_offset_x = Decimal('0')
-						self.current_offset_y = Decimal('0')
 					
 					# Deal with some certain cases
 					

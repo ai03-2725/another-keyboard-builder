@@ -29,7 +29,7 @@ cat kle-raw | python plategen.py > plate.dxf
 ## Additional Options
 
 In addition to feeding in typical Keyboard-Layout-Editor data, custom fields may be added to fine-tune the outcomes:
-- `_rs:` Rotate the stabilizer cutout independently from the key. 
+- `_rs:` Rotate the stabilizer cutout independently from the key. (Idea from [SwillKB Builder](https://github.com/swill/kad))
 For example, for bottom row flipped spacebars, a 6.25U spacebar may have the data field `{w:6.25,_rs:180}`.
 - `_rc:` Similar, but for rotating the switch cutout independently of the key.
 

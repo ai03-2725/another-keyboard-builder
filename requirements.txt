@@ -1,0 +1,4 @@
+ezdxf=0.8.8
+pyparsing=2.2.2
+json5=0.6.1
+mpmath=1.0.0

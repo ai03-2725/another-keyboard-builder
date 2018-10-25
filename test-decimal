@@ -1,4 +1,0 @@
-from decimal import *
-
-i = Decimal(1.25)
-i.as_integer_ratio()

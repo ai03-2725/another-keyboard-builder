@@ -46,6 +46,9 @@ cutout_radius = Decimal('0.5')
 # Stab type: mx, mx-simple, ai-angled, large-cuts, alps-aek, alps-at101
 stab_type = "alps-at101"
 
+# Stab radius: The fillet radius for stab cutouts ( 0 <= x <= 1 )
+stab_radius = Decimal('0.5')
+
 # Korean cuts: The cutouts typically found on kustoms beside the switches.
 # This script only handles the thin short cuts vertically beside each switch cut, not the large ones, i.e. between fn row and alphas.
 # none = disabled, typical = 1.5-1.75U only, extreme = On 1.5-2.75U
@@ -154,149 +157,6 @@ def is_a_number(s):
 	except ValueError:
 		return_value = False
 	return return_value
-	
-# Stab cutout maker
-# The x and y are center top, like this:
-#
-# ---X---
-# |     |
-# |     |
-# |     |
-# |_   _|
-#   |_|
-
-def make_stab_cutout(x, y):
-	if (stab_type == "mx-simple"):
-		# Rectangular simplified mx cutout.
-		modelspace.add_line((x - Decimal('3.3274'), y), (x + Decimal('3.3274'), y))
-		modelspace.add_line((x - Decimal('3.3274'), y - Decimal('13.462')), (x + Decimal('3.3274'), y - Decimal('13.462')))
-		modelspace.add_line((x - Decimal('3.3274'), y), (x - Decimal('3.3274'), y - Decimal('13.462')))
-		modelspace.add_line((x + Decimal('3.3274'), y), (x + Decimal('3.3274'), y - Decimal('13.462')))
-	elif (stab_type == "mx"):
-		# Proper MX based on datasheet.
-		# DOES NOT INCLUDE PLATE MOUNT since basically nobody uses plate mount stabs
-		modelspace.add_line((x - Decimal('3.3274'), y), (x + Decimal('3.3274'), y))
-		modelspace.add_line((x - Decimal('3.3274'), y - Decimal('12.2936')), (x - Decimal('1.8034'), y - Decimal('12.2936')))
-		modelspace.add_line((x + Decimal('3.3274'), y - Decimal('12.2936')), (x + Decimal('1.8034'), y - Decimal('12.2936')))
-		modelspace.add_line((x - Decimal('1.8034'), y - Decimal('13.462')), (x + Decimal('1.8034'), y - Decimal('13.462')))
-		
-		modelspace.add_line((x - Decimal('3.3274'), y), (x - Decimal('3.3274'), y - Decimal('12.2936')))
-		modelspace.add_line((x + Decimal('3.3274'), y), (x + Decimal('3.3274'), y - Decimal('12.2936')))
-		modelspace.add_line((x - Decimal('1.8034'), y - Decimal('12.2936')), (x - Decimal('1.8034'), y - Decimal('13.462')))
-		modelspace.add_line((x + Decimal('1.8034'), y - Decimal('12.2936')), (x + Decimal('1.8034'), y - Decimal('13.462')))
-	elif (stab_type == "ai-angled"):
-		# A sleek cutout with diagonal cuts on bottom. Higher origin y coordinate by 0.3mm to account for a 0.5mm fillet.
-		modelspace.add_line((x - Decimal('3.3274'), y + Decimal('0.3')), (x + Decimal('3.3274'), y + Decimal('0.3')))
-		modelspace.add_line((x - Decimal('2.159'), y - Decimal('13.462')), (x + Decimal('2.159'), y - Decimal('13.462')))
-		
-		modelspace.add_line((x - Decimal('3.3274'), y - Decimal('12.2936')), (x - Decimal('2.159'), y - Decimal('13.462')))
-		modelspace.add_line((x + Decimal('3.3274'), y - Decimal('12.2936')), (x + Decimal('2.159'), y - Decimal('13.462')))
-		
-		modelspace.add_line((x - Decimal('3.3274'), y + Decimal('0.3')), (x - Decimal('3.3274'), y - Decimal('12.2936')))
-		modelspace.add_line((x + Decimal('3.3274'), y + Decimal('0.3')), (x + Decimal('3.3274'), y - Decimal('12.2936')))
-	elif (stab_type == "large-cuts"):
-		# Large, spacious 15x7 cutouts; 1mm from mx switch cutout top
-		modelspace.add_line((x - Decimal('3.5'), y + Decimal('0.2954')), (x + Decimal('3.5'), y + Decimal('0.2954')))
-		modelspace.add_line((x - Decimal('3.5'), y - Decimal('14.7046')), (x + Decimal('3.5'), y - Decimal('14.7046')))
-		modelspace.add_line((x - Decimal('3.5'), y + Decimal('0.2954')), (x - Decimal('3.5'), y - Decimal('14.7046')))
-		modelspace.add_line((x + Decimal('3.5'), y + Decimal('0.2954')), (x + Decimal('3.5'), y - Decimal('14.7046')))
-	elif (stab_type == "alps-aek" or stab_type == "alps-at101"):
-		# Rectangles 2.67 wide, 5.21 high.
-		modelspace.add_line((x - Decimal('1.335'), y), (x + Decimal('1.335'), y))
-		modelspace.add_line((x - Decimal('1.335'), y - Decimal('5.21')), (x + Decimal('1.335'), y - Decimal('5.21')))
-		modelspace.add_line((x - Decimal('1.335'), y), (x - Decimal('1.335'), y - Decimal('5.21')))
-		modelspace.add_line((x + Decimal('1.335'), y), (x + Decimal('1.335'), y - Decimal('5.21')))
-	else:
-		print("Unsupported stab type.", file=sys.stderr)
-		print("Stab types: mx, mx-simple, ai-angled, large-cuts, alps-aek, alps-at101", file=sys.stderr)
-		exit(1)
-	
-# Korean cuts maker
-# Same dimensions method as stab cutout maker
-
-def make_korean_cuts(x, y):
-		
-		modelspace.add_arc((x - Decimal('1') + cutout_radius, y - cutout_radius), cutout_radius, 90, 180)
-		modelspace.add_arc((x + Decimal('1') - cutout_radius, y - cutout_radius), cutout_radius, 0, 90)
-		modelspace.add_arc((x - Decimal('1') + cutout_radius, y - cutout_height + cutout_radius), cutout_radius, 180, 270)
-		modelspace.add_arc((x + Decimal('1') - cutout_radius, y - cutout_height + cutout_radius), cutout_radius, 270, 360)
-		modelspace.add_line((x - Decimal('1'), y - cutout_radius), (x - Decimal('1'), y - cutout_height + cutout_radius))
-		modelspace.add_line((x + Decimal('1'), y - cutout_radius), (x + Decimal('1'), y - cutout_height + cutout_radius))
-		modelspace.add_line((x - Decimal('1') + cutout_radius, y), (x + Decimal('1') - cutout_radius, y))
-		modelspace.add_line((x - Decimal('1') + cutout_radius, y - cutout_height), (x + Decimal('1') - cutout_radius, y - cutout_height))
-	
-# Calls make stab cutout based on unit width and style
-def generate_stabs(x, y, unitwidth):
-
-	center_x = x + (cutout_width / Decimal('2'))
-
-	if (debug_log):
-		print("Genstabs: width " + str(unitwidth))
-
-	if (stab_type == "mx-simple" or stab_type == "mx" or stab_type == "ai-angled" or stab_type == "large-cuts"):
-		stab_y = y - Decimal('1.2954')
-		# Switch based on unit width
-		# These spacings are based on official mx datasheets and deskthority measurements
-		if (unitwidth >= 8): 
-			make_stab_cutout(center_x + Decimal('66.675'), stab_y)
-			make_stab_cutout(center_x - Decimal('66.675'), stab_y)
-		elif (unitwidth >= 7): 
-			make_stab_cutout(center_x + Decimal('57.15'), stab_y)
-			make_stab_cutout(center_x - Decimal('57.15'), stab_y)
-		elif (unitwidth == 6.25): 
-			make_stab_cutout(center_x + Decimal('50'), stab_y)
-			make_stab_cutout(center_x - Decimal('50'), stab_y)
-		elif (unitwidth == 6): 
-			make_stab_cutout(center_x + Decimal('38.1'), stab_y)
-			make_stab_cutout(center_x - Decimal('57.15'), stab_y)
-		elif (unitwidth >= 3): 
-			make_stab_cutout(center_x + Decimal('19.05'), stab_y)
-			make_stab_cutout(center_x - Decimal('19.05'), stab_y)
-		elif (unitwidth >= 2): 
-			make_stab_cutout(center_x + Decimal('11.938'), stab_y)
-			make_stab_cutout(center_x - Decimal('11.938'), stab_y)
-			if (koreancuts_type == "extreme"):
-				make_korean_cuts(center_x + Decimal('18.25'), y)
-				make_korean_cuts(center_x - Decimal('18.25'), y)
-		elif (unitwidth >= 1.5):
-			if (koreancuts_type == "typical" or (koreancuts_type == "extreme")):
-				make_korean_cuts(center_x + Decimal('11.6'), y)
-				make_korean_cuts(center_x - Decimal('11.6'), y)
-	elif (stab_type == "alps-aek"):
-		# These are mostly based on measurements. 
-		# If someone has datasheets, please let me know
-		stab_y = y - Decimal('10.273')
-		if (unitwidth >= 6.5): 
-			make_stab_cutout(center_x + Decimal('45.3'), stab_y)
-			make_stab_cutout(center_x - Decimal('45.3'), stab_y)
-		elif (unitwidth >= 6.25): 
-			make_stab_cutout(center_x + Decimal('41.86'), stab_y)
-			make_stab_cutout(center_x - Decimal('41.86'), stab_y)
-		elif (unitwidth >= 2): 
-			make_stab_cutout(center_x + Decimal('14'), stab_y)
-			make_stab_cutout(center_x - Decimal('14'), stab_y)
-		elif (unitwidth >= 1.75): 
-			make_stab_cutout(center_x + Decimal('12'), stab_y)
-			make_stab_cutout(center_x - Decimal('12'), stab_y)
-	elif (stab_type == "alps-at101"):
-		# These are mostly based on measurements. 
-		# If someone has datasheets, please let me know
-		stab_y = y - Decimal('10.273')
-		if (unitwidth >= 6.5): 
-			make_stab_cutout(center_x + Decimal('45.3'), stab_y)
-			make_stab_cutout(center_x - Decimal('45.3'), stab_y)
-		elif (unitwidth >= 6.25): 
-			make_stab_cutout(center_x + Decimal('41.86'), stab_y)
-			make_stab_cutout(center_x - Decimal('41.86'), stab_y)
-		elif (unitwidth >= 2.75): 
-			make_stab_cutout(center_x + Decimal('20.5'), stab_y)
-			make_stab_cutout(center_x - Decimal('20.5'), stab_y)
-		elif (unitwidth >= 2): 
-			make_stab_cutout(center_x + Decimal('14'), stab_y)
-			make_stab_cutout(center_x - Decimal('14'), stab_y)
-		elif (unitwidth >= 1.75): 
-			make_stab_cutout(center_x + Decimal('12'), stab_y)
-			make_stab_cutout(center_x - Decimal('12'), stab_y)
 			
 # Reset key default parameters
 def reset_key_parameters():
@@ -360,6 +220,156 @@ def draw_rotated_arc(x, y, anchor_x, anchor_y, radius, angle_start, angle_end, r
 	coords = rotate_point_around_anchor(x, y, anchor_x, anchor_y, rotation)
 	modelspace.add_arc((coords[0], coords[1]), radius, float(angle_start + rotation), float(angle_end + rotation))
 	
+# Stab cutout maker
+# The x and y are center, like this:
+#
+# -------
+# |     |
+# |  X  | -  -  -  Center Y of switch
+# |     |
+# |_   _|
+#   |_|
+
+def make_stab_cutout(x, y, anchor_x, anchor_y, angle):
+
+	line_segments = []
+	corners = []
+	
+	if (stab_type == "mx-simple"):
+		# Rectangular simplified mx cutout.
+		# A bit larger than stock to account for fillets.
+		
+		line_segments.append((Decimal('-3.375') + stab_radius, Decimal('6'), Decimal('3.375') - stab_radius, Decimal('6')))
+		line_segments.append((Decimal('-3.375') + stab_radius, Decimal('-8'), Decimal('3.375') - stab_radius, Decimal('-8')))
+		line_segments.append((Decimal('-3.375'), Decimal('6') - stab_radius, Decimal('-3.375'), Decimal('-8') + stab_radius))
+		line_segments.append((Decimal('3.375'), Decimal('6') - stab_radius, Decimal('3.375'), Decimal('-8') + stab_radius))
+		
+		corners.append((Decimal('-3.375') + stab_radius, Decimal('6') - stab_radius, 90, 180))
+		corners.append((Decimal('3.375') - stab_radius, Decimal('6') - stab_radius, 0, 90))
+		corners.append((Decimal('-3.375') + stab_radius, Decimal('-8') + stab_radius, 180, 270))
+		corners.append((Decimal('3.375') - stab_radius, Decimal('-8') + stab_radius, 270, 360))
+		
+	elif (stab_type == "large-cuts"):
+		# Large, spacious 15x7 cutouts; 1mm from mx switch cutout top
+		
+		line_segments.append((Decimal('-3.5') + stab_radius, Decimal('6'), Decimal('3.5') - stab_radius, Decimal('6')))
+		line_segments.append((Decimal('-3.5') + stab_radius, Decimal('-9'), Decimal('3.5') - stab_radius, Decimal('-9')))
+		line_segments.append((Decimal('-3.5'), Decimal('6') - stab_radius, Decimal('-3.5'), Decimal('-9') + stab_radius))
+		line_segments.append((Decimal('3.5'), Decimal('6') - stab_radius, Decimal('3.5'), Decimal('-9') + stab_radius))
+		
+		corners.append((Decimal('-3.5') + stab_radius, Decimal('6') - stab_radius, 90, 180))
+		corners.append((Decimal('3.5') - stab_radius, Decimal('6') - stab_radius, 0, 90))
+		corners.append((Decimal('-3.5') + stab_radius, Decimal('-9') + stab_radius, 180, 270))
+		corners.append((Decimal('3.5') - stab_radius, Decimal('-9') + stab_radius, 270, 360))
+		
+	elif (stab_type == "alps-aek" or stab_type == "alps-at101"):
+		# Rectangles 2.67 wide, 5.21 high.
+		
+		line_segments.append((Decimal('-1.335') + stab_radius, Decimal('-3.875'), Decimal('1.335') - stab_radius, Decimal('-3.875')))
+		line_segments.append((Decimal('-1.335') + stab_radius, Decimal('-9.085'), Decimal('1.335') - stab_radius, Decimal('-9.085')))
+		line_segments.append((Decimal('-1.335'), Decimal('-3.875') - stab_radius, Decimal('-1.335'), Decimal('-9.085') + stab_radius))
+		line_segments.append((Decimal('1.335'), Decimal('-3.875') - stab_radius, Decimal('1.335'), Decimal('-9.085') + stab_radius))
+		
+		corners.append((Decimal('-1.335') + stab_radius, Decimal('-3.875') - stab_radius, 90, 180))
+		corners.append((Decimal('1.335') - stab_radius, Decimal('-3.875') - stab_radius, 0, 90))
+		corners.append((Decimal('-1.335') + stab_radius, Decimal('-9.085') + stab_radius, 180, 270))
+		corners.append((Decimal('1.335') - stab_radius, Decimal('-9.085') + stab_radius, 270, 360))		
+		
+	else:
+		print("Unsupported stab type.", file=sys.stderr)
+		print("Stab types: mx-simple, large-cuts, alps-aek, alps-at101", file=sys.stderr)
+		exit(1)
+		
+	for line in line_segments:
+		draw_rotated_line(x + Decimal(str(line[0])), y + Decimal(str(line[1])), x + Decimal(str(line[2])), y + Decimal(str(line[3])), anchor_x, anchor_y, angle)
+		
+	for arc in corners:
+		draw_rotated_arc(x + Decimal(str(arc[0])), y + Decimal(str(arc[1])), anchor_x, anchor_y, stab_radius, arc[2], arc[3], angle)
+		
+# Calls make stab cutout based on unit width and style
+def generate_stabs(center_x, center_y, angle, unitwidth):
+
+	if (stab_type == "mx-simple" or stab_type == "large-cuts"):
+		# Switch based on unit width
+		# These spacings are based on official mx datasheets and deskthority measurements
+		if (unitwidth >= 8): 
+			# make_stab_cutout(x, y, anchor_x, anchor_y, angle)
+			make_stab_cutout(center_x + Decimal('66.675'), center_y, center_x, center_y, angle)
+			make_stab_cutout(center_x - Decimal('66.675'), center_y, center_x, center_y, angle)
+		elif (unitwidth >= 7): 
+			make_stab_cutout(center_x + Decimal('57.15'), center_y, center_x, center_y, angle)
+			make_stab_cutout(center_x - Decimal('57.15'), center_y, center_x, center_y, angle)
+		elif (unitwidth == 6.25): 
+			make_stab_cutout(center_x + Decimal('50'), center_y, center_x, center_y, angle)
+			make_stab_cutout(center_x - Decimal('50'), center_y, center_x, center_y, angle)
+		elif (unitwidth == 6): 
+			make_stab_cutout(center_x + Decimal('38.1'), center_y, center_x, center_y, angle)
+			make_stab_cutout(center_x - Decimal('57.15'), center_y, center_x, center_y, angle)
+		elif (unitwidth >= 3): 
+			make_stab_cutout(center_x + Decimal('19.05'), center_y, center_x, center_y, angle)
+			make_stab_cutout(center_x - Decimal('19.05'), center_y, center_x, center_y, angle)
+		elif (unitwidth >= 2): 
+			make_stab_cutout(center_x + Decimal('11.938'), center_y, center_x, center_y, angle)
+			make_stab_cutout(center_x - Decimal('11.938'), center_y, center_x, center_y, angle)
+	elif (stab_type == "alps-aek"):
+		# These are mostly based on measurements. 
+		# If someone has datasheets, please let me know
+		if (unitwidth >= 6.5): 
+			make_stab_cutout(center_x + Decimal('45.3'), center_y, center_x, center_y, angle)
+			make_stab_cutout(center_x - Decimal('45.3'), center_y, center_x, center_y, angle)
+		elif (unitwidth >= 6.25): 
+			make_stab_cutout(center_x + Decimal('41.86'), center_y, center_x, center_y, angle)
+			make_stab_cutout(center_x - Decimal('41.86'), center_y, center_x, center_y, angle)
+		elif (unitwidth >= 2): 
+			make_stab_cutout(center_x + Decimal('14'), center_y, center_x, center_y, angle)
+			make_stab_cutout(center_x - Decimal('14'), center_y, center_x, center_y, angle)
+		elif (unitwidth >= 1.75): 
+			make_stab_cutout(center_x + Decimal('12'), center_y, center_x, center_y, angle)
+			make_stab_cutout(center_x - Decimal('12'), center_y, center_x, center_y, angle)
+	elif (stab_type == "alps-at101"):
+		# These are mostly based on measurements. 
+		# If someone has datasheets, please let me know
+		if (unitwidth >= 6.5): 
+			make_stab_cutout(center_x + Decimal('45.3'), center_y, center_x, center_y, angle)
+			make_stab_cutout(center_x - Decimal('45.3'), center_y, center_x, center_y, angle)
+		elif (unitwidth >= 6.25): 
+			make_stab_cutout(center_x + Decimal('41.86'), center_y, center_x, center_y, angle)
+			make_stab_cutout(center_x - Decimal('41.86'), center_y, center_x, center_y, angle)
+		elif (unitwidth >= 2.75): 
+			make_stab_cutout(center_x + Decimal('20.5'), center_y, center_x, center_y, angle)
+			make_stab_cutout(center_x - Decimal('20.5'), center_y, center_x, center_y, angle)
+		elif (unitwidth >= 2): 
+			make_stab_cutout(center_x + Decimal('14'), center_y, center_x, center_y, angle)
+			make_stab_cutout(center_x - Decimal('14'), center_y, center_x, center_y, angle)
+		elif (unitwidth >= 1.75): 
+			make_stab_cutout(center_x + Decimal('12'), center_y, center_x, center_y, angle)
+			make_stab_cutout(center_x - Decimal('12'), center_y, center_x, center_y, angle)
+	
+# Acoustics cuts maker
+
+def make_acoustic_cutout(x, y, angle):
+		
+	line_segments = []
+	corners = []
+	
+	if (cutout_type == "mx" or cutout_type == "alps"):
+		
+		line_segments.append((Decimal('-1') + stab_radius, (cutout_height / Decimal('2')), Decimal('1') - stab_radius, (cutout_height / Decimal('2'))))
+		line_segments.append((Decimal('-1') + stab_radius, (cutout_height / -Decimal('2')), Decimal('1') - stab_radius, (cutout_height / -Decimal('2'))))
+		line_segments.append((Decimal('-1'), (cutout_height / Decimal('2')) - stab_radius, Decimal('-1'), (cutout_height / -Decimal('2')) + stab_radius))
+		line_segments.append((Decimal('1'), (cutout_height / Decimal('2')) - stab_radius, Decimal('1'), (cutout_height / -Decimal('2')) + stab_radius))
+		
+		corners.append((Decimal('-1') + stab_radius, (cutout_height / Decimal('2')) - stab_radius, 90, 180))
+		corners.append((Decimal('1') - stab_radius, (cutout_height / Decimal('2')) - stab_radius, 0, 90))
+		corners.append((Decimal('-1') + stab_radius, (cutout_height / -Decimal('2')) + stab_radius, 180, 270))
+		corners.append((Decimal('1') - stab_radius, (cutout_height / -Decimal('2')) + stab_radius, 270, 360))
+		
+	for line in line_segments:
+		draw_rotated_line(x + Decimal(str(line[0])), y + Decimal(str(line[1])), x + Decimal(str(line[2])), y + Decimal(str(line[3])), anchor_x, anchor_y, angle)
+		
+	for arc in corners:
+		draw_rotated_arc(x + Decimal(str(arc[0])), y + Decimal(str(arc[1])), anchor_x, anchor_y, stab_radius, arc[2], arc[3], angle)
+	
 # Draw switch cutout
 def draw_switch_cutout(mm_center_x, mm_center_y, angle):
 	# Make some variables for the sake of legibility
@@ -379,7 +389,6 @@ def draw_switch_cutout(mm_center_x, mm_center_y, angle):
 	mm_center_x, mm_center_y, angle)
 	
 	# Now render corner arcs: top left, top right, bottom left, bottom right
-	# Help
 	draw_rotated_arc(mm_x_left + cutout_radius, mm_y_top - cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('90'), Decimal('180'), angle)
 	draw_rotated_arc(mm_x_right - cutout_radius, mm_y_top - cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('0'), Decimal('90'), angle)
 	draw_rotated_arc(mm_x_left + cutout_radius, mm_y_bottom + cutout_radius, mm_center_x, mm_center_y, cutout_radius, Decimal('180'), Decimal('270'), angle)
@@ -416,8 +425,15 @@ def render_switch(switch):
 		mm_center_x = rotated_central_coords[0]
 		mm_center_y = rotated_central_coords[1]
 	
-	# Now draw the cutouts
+	# Draw main switch cutout
 	draw_switch_cutout(mm_center_x, mm_center_y, switch.angle + switch.cutout_angle)
+	
+	# Adjust width for vertically tall keys, and generate stabs
+	apparent_width = switch.width;
+	if (switch.width < switch.height):
+		apparent_width = switch.height;
+	
+	generate_stabs(mm_center_x, mm_center_y, switch.angle + switch.stab_angle, apparent_width)
 	
 	
 #=================================#
@@ -541,7 +557,7 @@ for row in json_data:
 			# The key's cutout angle and stab angle should be offset by 90 degrees to compensate.
 			# This effectively transforms the key to a vertical
 			# This also handles ISO
-			if (current_width < current_height and current_height >= 2):
+			if (current_width < current_height and current_height >= 1.75):
 				current_switch.cutout_angle -= Decimal('90')
 				current_switch.stab_angle -= Decimal('90')
 			

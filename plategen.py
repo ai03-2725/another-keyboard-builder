@@ -81,10 +81,7 @@ class PlateGenerator(object):
 		[{r:15,rx:0.5,ry:0.5,y:-0.5,x:-0.5},""]
 		"""
 
-		#=================================#
-		#         Runtime Vars            #
-		#=================================#
-
+		# Runtime vars that are often systematically changed or reset
 
 		# Current x/y coordinates
 		self.current_x = Decimal('0')

@@ -95,17 +95,7 @@ class PlateGenerator(object):
 		self.input_data = ""
 
 		# Used for parsing
-		self.current_width = Decimal('1')
-		self.current_height = Decimal('1')
-		self.current_width_secondary = Decimal('1')
-		self.current_height_secondary = Decimal('1')
-		self.current_rotx = Decimal('0')
-		self.current_roty = Decimal('0')
-		self.current_angle = Decimal('0')
-		self.current_stab_angle = Decimal('0')
-		self.current_cutout_angle = Decimal('0')
-		self.current_offset_x = Decimal('0')
-		self.current_offset_y = Decimal('0')
+		reset_key_parameters()
 
 	#=================================#
 	#            Classes              #
@@ -156,17 +146,6 @@ class PlateGenerator(object):
 				
 	# Reset key default parameters
 	def reset_key_parameters(self):
-		global self.current_width
-		global self.current_height
-		global self.current_width_secondary
-		global self.current_height_secondary
-		global self.current_rotx
-		global self.current_roty
-		global self.current_angle
-		global self.current_stab_angle
-		global self.current_cutout_angle
-		global self.current_offset_x
-		global self.current_offset_y
 		
 		self.current_width = Decimal('1')
 		self.current_height = Decimal('1')

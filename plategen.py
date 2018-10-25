@@ -92,6 +92,8 @@ class PlateGenerator(object):
 		# Current x/y coordinates
 		self.current_x = Decimal('0')
 		self.current_y = Decimal('0')
+		self.max_width = Decimal('0')
+		self.max_height = Decimal('0')
 
 		# Cutout sizes
 		self.cutout_width = Decimal('0')
@@ -102,7 +104,10 @@ class PlateGenerator(object):
 
 		# Used for parsing
 		self.reset_key_parameters()
-
+		self.current_rotx = Decimal('0')
+		self.current_roty = Decimal('0')
+		self.current_angle = Decimal('0')
+		
 	#=================================#
 	#            Classes              #
 	#=================================#
@@ -157,13 +162,11 @@ class PlateGenerator(object):
 		self.current_height = Decimal('1')
 		self.current_width_secondary = Decimal('1')
 		self.current_height_secondary = Decimal('1')
-		self.current_rotx = Decimal('0')
-		self.current_roty = Decimal('0')
-		self.current_angle = Decimal('0')
 		self.current_stab_angle = Decimal('0')
 		self.current_cutout_angle = Decimal('0')
 		self.current_offset_x = Decimal('0')
 		self.current_offset_y = Decimal('0')
+		self.current_deco = False
 				
 	# Modifies a point with rotation
 	def rotate_point_around_anchor(self, x, y, anchor_x, anchor_y, angle):
@@ -353,6 +356,7 @@ class PlateGenerator(object):
 		
 	# Draw switch cutout
 	def draw_switch_cutout(self, mm_center_x, mm_center_y, angle):
+	
 		# Make some variables for the sake of legibility
 		mm_y_top = mm_center_y + (self.cutout_height / Decimal('2'));
 		mm_y_bottom = mm_center_y - (self.cutout_height / Decimal('2'));
@@ -414,7 +418,22 @@ class PlateGenerator(object):
 			
 			mm_center_x = rotated_central_coords[0]
 			mm_center_y = rotated_central_coords[1]
-		
+			
+			# Do some calculations to see if a rotated switch exceeds current max boundaries
+			corners = []
+			corners.append((mm_x, mm_y))
+			corners.append((mm_x + (switch.width * self.unit_width), mm_y))
+			corners.append((mm_x, mm_y - (switch.height * self.unit_height)))
+			corners.append((mm_x + (switch.width * self.unit_width), mm_y - (switch.height * self.unit_height)))
+			
+			for corner in corners:
+				rotated_corner = self.rotate_point_around_anchor(corner[0], corner[1], mm_center_x, mm_center_y, switch.angle)
+				
+				if (rotated_corner[0] > self.max_width):
+					self.max_width = rotated_corner[0];
+				if (rotated_corner[1] < self.max_height):
+					self.max_height = rotated_corner[1];
+				
 		# Draw main switch cutout
 		self.draw_switch_cutout(mm_center_x, mm_center_y, switch.angle + switch.cutout_angle)
 		
@@ -483,14 +502,7 @@ class PlateGenerator(object):
 			print("")
 
 		# Parse KLE data
-
-		self.current_x = Decimal('0')
-		self.current_y = Decimal('0')
-		max_width = Decimal('0')
-		max_height = Decimal('0')
-
 		all_switches = []
-
 		json_data = json5.loads('[' + self.input_data + ']')
 
 		for row in json_data:
@@ -510,18 +522,25 @@ class PlateGenerator(object):
 				# If it's just a string, it's just a key. Create one and add to list
 				if isinstance(key, str):
 				
+					if (self.current_deco):
+						self.reset_key_parameters()
+						continue
+				
 					# First, we simply make the switch
 					current_switch = self.Switch(self.current_x, self.current_y)
 					
 					# For x and y offset, check if any rotation spec is set.
 					if (self.current_rotx != 0 or self.current_roty != 0 or self.current_angle != 0):
+					
+						# This means we RETAIN rx or ry from previous. How awful of a syntax. Seriously KLE?
+					
 						# If set, store the value
 						current_switch.offset_x = self.current_offset_x
 						current_switch.offset_y = self.current_offset_y
 						
 						# Check and see if it's a y record
-						if (max_height > -self.current_roty - self.current_offset_y):
-							max_height = -self.current_roty - self.current_offset_y
+						if (self.max_height > -self.current_roty - self.current_offset_y):
+							self.max_height = -self.current_roty - self.current_offset_y
 						
 					else:
 						# Otherwise, append
@@ -533,14 +552,14 @@ class PlateGenerator(object):
 						self.current_offset_y = Decimal('0')
 						
 						# Check and see if it's a y record
-						if (max_height > self.current_y - self.current_height):
-							max_height = self.current_y - self.current_height
+						if (self.max_height > self.current_y - self.current_height):
+							self.max_height = self.current_y - self.current_height
 					
 					# Then, adjust the x coord for next switch
 					self.current_x += self.current_width
 					# If this is a x record, update properly
-					if (max_width < self.current_x):
-						max_width = self.current_x
+					if (self.max_width < self.current_x):
+						self.max_width = self.current_x
 					
 					
 					# And we adjust the fields as necessary.
@@ -623,24 +642,30 @@ class PlateGenerator(object):
 							self.current_offset_y = Decimal(str(j))
 						
 						elif (str(i) == "d"):
-							# Key is decoration. Next.
-							self.reset_key_parameters()
-							continue
+							# Key is decoration. 
+							self.current_deco = True
 						
 			# Finished row
 			self.current_y -= Decimal('1')
 			self.current_x = Decimal('0')
+			
 
 		# At this point, the keys are built.
+		
+		# Adjust max width/height from units to mm
+		
+		self.max_width = self.max_width * self.unit_width
+		self.max_height = self.max_height * self.unit_height
+		
 		# Render each one by one. 
 		for switch in all_switches:
 			self.render_switch(switch)
 
 		# Draw outer bounds - top, bottom, left, right
-		self.modelspace.add_line((0, 0), (max_width * self.unit_height, 0))
-		self.modelspace.add_line((0, max_height * self.unit_height), (max_width * self.unit_height, max_height * self.unit_height))
-		self.modelspace.add_line((0, 0), (0, max_height * self.unit_height))
-		self.modelspace.add_line((max_width * self.unit_height, 0), (max_width * self.unit_height, max_height * self.unit_height))
+		self.modelspace.add_line((0, 0), (self.max_width, 0))
+		self.modelspace.add_line((0, self.max_height), (self.max_width, self.max_height))
+		self.modelspace.add_line((0, 0), (0, self.max_height))
+		self.modelspace.add_line((self.max_width, 0), (self.max_width, self.max_height))
 			
 		if (self.debug_log):
 			print("Complete! Saving plate to specified output")

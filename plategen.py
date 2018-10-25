@@ -18,7 +18,6 @@
 import ezdxf
 import sys
 import json5
-import decimal
 
 from mpmath import *
 from decimal import *
@@ -150,7 +149,7 @@ class PlateGenerator(object):
 		
 	# Check if string is valid number
 	# Credits to https://stackoverflow.com/questions/4138202/using-isdigit-for-floats
-	def is_a_number(s):
+	def is_a_number(self, s):
 		return_value = True
 		try:
 			test_float = float(s)
@@ -159,7 +158,7 @@ class PlateGenerator(object):
 		return return_value
 				
 	# Reset key default parameters
-	def reset_key_parameters():
+	def reset_key_parameters(self):
 		global self.current_width
 		global self.current_height
 		global self.current_width_secondary
@@ -185,7 +184,7 @@ class PlateGenerator(object):
 		self.current_offset_y = Decimal('0')
 				
 	# Modifies a point with rotation
-	def rotate_point_around_anchor(x, y, anchor_x, anchor_y, angle):
+	def rotate_point_around_anchor(self, x, y, anchor_x, anchor_y, angle):
 		radius_squared = ((x - anchor_x) ** Decimal('2')) + ((y-anchor_y) ** Decimal('2'))
 		radius = Decimal.sqrt(radius_squared)
 		anglefrac = angle.as_integer_ratio()
@@ -209,14 +208,14 @@ class PlateGenerator(object):
 		return (new_x, new_y)
 		
 	# Draw line segment rotated with respect to an anchor
-	def draw_rotated_line(x1, y1, x2, y2, anchor_x, anchor_y, angle):
+	def draw_rotated_line(self, x1, y1, x2, y2, anchor_x, anchor_y, angle):
 		coords_1 = rotate_point_around_anchor(x1, y1, anchor_x, anchor_y, angle)
 		coords_2 = rotate_point_around_anchor(x2, y2, anchor_x, anchor_y, angle)
 		
 		modelspace.add_line((coords_1[0], coords_1[1]), (coords_2[0], coords_2[1]))
 		
 	# Draw arc rotated with respect to an anchor
-	def draw_rotated_arc(x, y, anchor_x, anchor_y, radius, angle_start, angle_end, rotation):
+	def draw_rotated_arc(self, x, y, anchor_x, anchor_y, radius, angle_start, angle_end, rotation):
 		coords = rotate_point_around_anchor(x, y, anchor_x, anchor_y, rotation)
 		modelspace.add_arc((coords[0], coords[1]), radius, float(angle_start + rotation), float(angle_end + rotation))
 		
@@ -230,7 +229,7 @@ class PlateGenerator(object):
 	# |_   _|
 	#   |_|
 
-	def make_stab_cutout(x, y, anchor_x, anchor_y, angle):
+	def make_stab_cutout(self, x, y, anchor_x, anchor_y, angle):
 
 		line_segments = []
 		corners = []
@@ -287,7 +286,7 @@ class PlateGenerator(object):
 			draw_rotated_arc(x + Decimal(str(arc[0])), y + Decimal(str(arc[1])), anchor_x, anchor_y, self.stab_radius, arc[2], arc[3], angle)
 			
 	# Calls make stab cutout based on unit width and style
-	def generate_stabs(center_x, center_y, angle, unitwidth):
+	def generate_stabs(self, center_x, center_y, angle, unitwidth):
 
 		if (self.stab_type == "mx-simple" or self.stab_type == "large-cuts"):
 			# Switch based on unit width
@@ -347,7 +346,7 @@ class PlateGenerator(object):
 		
 	# Acoustics cuts maker
 
-	def make_acoustic_cutout(x, y, angle):
+	def make_acoustic_cutout(self, x, y, angle):
 			
 		line_segments = []
 		corners = []
@@ -371,7 +370,7 @@ class PlateGenerator(object):
 			draw_rotated_arc(x + Decimal(str(arc[0])), y + Decimal(str(arc[1])), anchor_x, anchor_y, self.stab_radius, arc[2], arc[3], angle)
 		
 	# Draw switch cutout
-	def draw_switch_cutout(mm_center_x, mm_center_y, angle):
+	def draw_switch_cutout(self, mm_center_x, mm_center_y, angle):
 		# Make some variables for the sake of legibility
 		mm_y_top = mm_center_y + (self.cutout_height / Decimal('2'));
 		mm_y_bottom = mm_center_y - (self.cutout_height / Decimal('2'));
@@ -396,7 +395,7 @@ class PlateGenerator(object):
 		
 		
 	# Use the functions above to render an entire switch - Cutout, stabs, and all
-	def render_switch(switch):
+	def render_switch(self, switch):
 		
 		# Coord differs for regular vs rotated
 		if (switch.rotx != 0 or switch.roty != 0 or switch.angle != 0):
@@ -437,7 +436,7 @@ class PlateGenerator(object):
 		
 
 	# Generate switch cutout sizes
-	def initialize_variables():
+	def initialize_variables(self):
 		if (self.cutout_type == "mx"):
 			self.cutout_width = Decimal('14');
 			self.cutout_height = Decimal('14');
@@ -469,7 +468,7 @@ class PlateGenerator(object):
 			print("Unsupported output method specified", file=sys.stderr)
 			exit(1)
 
-	def generate_plate():
+	def generate_plate(self):
 
 		# Init vars
 		initialize_variables()

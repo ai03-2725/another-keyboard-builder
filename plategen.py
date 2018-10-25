@@ -587,7 +587,7 @@ class PlateGenerator(object):
 							# _rs = Rotation angle offset for stabilizer OPPOSITE OF typical counterclockwise-from-xpositive
 							self.current_stab_angle = -Decimal(str(j))
 							
-						elif (str(i) == "_ca"):
+						elif (str(i) == "_rc"):
 							# _rs = Switch cutout angle offset for stabilizer OPPOSITE OF typical counterclockwise-from-xpositive
 							self.current_cutout_angle = -Decimal(str(j))
 							

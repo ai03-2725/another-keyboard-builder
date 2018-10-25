@@ -33,8 +33,8 @@ class PlateGenerator(object):
 		mp.pretty = True
 
 		# Create blank dxf workspace
-		plate = ezdxf.new(dxfversion='AC1024')
-		modelspace = plate.modelspace()
+		self.plate = ezdxf.new(dxfversion='AC1024')
+		self.modelspace = self.plate.modelspace()
 		
 		# Cutout type: mx, alps
 		self.cutout_type = "mx"
@@ -95,7 +95,7 @@ class PlateGenerator(object):
 		self.input_data = ""
 
 		# Used for parsing
-		reset_key_parameters()
+		self.reset_key_parameters()
 
 	#=================================#
 	#            Classes              #
@@ -129,10 +129,10 @@ class PlateGenerator(object):
 	def make_key_outline(x, y, width, height):
 
 		# Draw sides - top, bottom, left, right
-		modelspace.add_line((x, y), (x + (width * self.unit_width), y))
-		modelspace.add_line((x, y - (height * self.unit_height)), (x + (width * self.unit_width), y - (height * self.unit_height)))
-		modelspace.add_line((x, y), (x, y - (height * self.unit_height)))
-		modelspace.add_line((x + (width * self.unit_width), y), (x + (width * self.unit_width), y - (height * self.unit_height)))
+		self.modelspace.add_line((x, y), (x + (width * self.unit_width), y))
+		self.modelspace.add_line((x, y - (height * self.unit_height)), (x + (width * self.unit_width), y - (height * self.unit_height)))
+		self.modelspace.add_line((x, y), (x, y - (height * self.unit_height)))
+		self.modelspace.add_line((x + (width * self.unit_width), y), (x + (width * self.unit_width), y - (height * self.unit_height)))
 		
 	# Check if string is valid number
 	# Credits to https://stackoverflow.com/questions/4138202/using-isdigit-for-floats
@@ -185,15 +185,15 @@ class PlateGenerator(object):
 		
 	# Draw line segment rotated with respect to an anchor
 	def draw_rotated_line(self, x1, y1, x2, y2, anchor_x, anchor_y, angle):
-		coords_1 = rotate_point_around_anchor(x1, y1, anchor_x, anchor_y, angle)
-		coords_2 = rotate_point_around_anchor(x2, y2, anchor_x, anchor_y, angle)
+		coords_1 = self.rotate_point_around_anchor(x1, y1, anchor_x, anchor_y, angle)
+		coords_2 = self.rotate_point_around_anchor(x2, y2, anchor_x, anchor_y, angle)
 		
-		modelspace.add_line((coords_1[0], coords_1[1]), (coords_2[0], coords_2[1]))
+		self.modelspace.add_line((coords_1[0], coords_1[1]), (coords_2[0], coords_2[1]))
 		
 	# Draw arc rotated with respect to an anchor
 	def draw_rotated_arc(self, x, y, anchor_x, anchor_y, radius, angle_start, angle_end, rotation):
-		coords = rotate_point_around_anchor(x, y, anchor_x, anchor_y, rotation)
-		modelspace.add_arc((coords[0], coords[1]), radius, float(angle_start + rotation), float(angle_end + rotation))
+		coords = self.rotate_point_around_anchor(x, y, anchor_x, anchor_y, rotation)
+		self.modelspace.add_arc((coords[0], coords[1]), radius, float(angle_start + rotation), float(angle_end + rotation))
 		
 	# Stab cutout maker
 	# The x and y are center, like this:
@@ -256,10 +256,10 @@ class PlateGenerator(object):
 			exit(1)
 			
 		for line in line_segments:
-			draw_rotated_line(x + Decimal(str(line[0])), y + Decimal(str(line[1])), x + Decimal(str(line[2])), y + Decimal(str(line[3])), anchor_x, anchor_y, angle)
+			self.draw_rotated_line(x + Decimal(str(line[0])), y + Decimal(str(line[1])), x + Decimal(str(line[2])), y + Decimal(str(line[3])), anchor_x, anchor_y, angle)
 			
 		for arc in corners:
-			draw_rotated_arc(x + Decimal(str(arc[0])), y + Decimal(str(arc[1])), anchor_x, anchor_y, self.stab_radius, arc[2], arc[3], angle)
+			self.draw_rotated_arc(x + Decimal(str(arc[0])), y + Decimal(str(arc[1])), anchor_x, anchor_y, self.stab_radius, arc[2], arc[3], angle)
 			
 	# Calls make stab cutout based on unit width and style
 	def generate_stabs(self, center_x, center_y, angle, unitwidth):
@@ -268,57 +268,57 @@ class PlateGenerator(object):
 			# Switch based on unit width
 			# These spacings are based on official mx datasheets and deskthority measurements
 			if (unitwidth >= 8): 
-				# make_stab_cutout(x, y, anchor_x, anchor_y, angle)
-				make_stab_cutout(center_x + Decimal('66.675'), center_y, center_x, center_y, angle)
-				make_stab_cutout(center_x - Decimal('66.675'), center_y, center_x, center_y, angle)
+				# self.make_stab_cutout(x, y, anchor_x, anchor_y, angle)
+				self.make_stab_cutout(center_x + Decimal('66.675'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x - Decimal('66.675'), center_y, center_x, center_y, angle)
 			elif (unitwidth >= 7): 
-				make_stab_cutout(center_x + Decimal('57.15'), center_y, center_x, center_y, angle)
-				make_stab_cutout(center_x - Decimal('57.15'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x + Decimal('57.15'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x - Decimal('57.15'), center_y, center_x, center_y, angle)
 			elif (unitwidth == 6.25): 
-				make_stab_cutout(center_x + Decimal('50'), center_y, center_x, center_y, angle)
-				make_stab_cutout(center_x - Decimal('50'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x + Decimal('50'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x - Decimal('50'), center_y, center_x, center_y, angle)
 			elif (unitwidth == 6): 
-				make_stab_cutout(center_x + Decimal('38.1'), center_y, center_x, center_y, angle)
-				make_stab_cutout(center_x - Decimal('57.15'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x + Decimal('38.1'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x - Decimal('57.15'), center_y, center_x, center_y, angle)
 			elif (unitwidth >= 3): 
-				make_stab_cutout(center_x + Decimal('19.05'), center_y, center_x, center_y, angle)
-				make_stab_cutout(center_x - Decimal('19.05'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x + Decimal('19.05'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x - Decimal('19.05'), center_y, center_x, center_y, angle)
 			elif (unitwidth >= 2): 
-				make_stab_cutout(center_x + Decimal('11.938'), center_y, center_x, center_y, angle)
-				make_stab_cutout(center_x - Decimal('11.938'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x + Decimal('11.938'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x - Decimal('11.938'), center_y, center_x, center_y, angle)
 		elif (self.stab_type == "alps-aek"):
 			# These are mostly based on measurements. 
 			# If someone has datasheets, please let me know
 			if (unitwidth >= 6.5): 
-				make_stab_cutout(center_x + Decimal('45.3'), center_y, center_x, center_y, angle)
-				make_stab_cutout(center_x - Decimal('45.3'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x + Decimal('45.3'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x - Decimal('45.3'), center_y, center_x, center_y, angle)
 			elif (unitwidth >= 6.25): 
-				make_stab_cutout(center_x + Decimal('41.86'), center_y, center_x, center_y, angle)
-				make_stab_cutout(center_x - Decimal('41.86'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x + Decimal('41.86'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x - Decimal('41.86'), center_y, center_x, center_y, angle)
 			elif (unitwidth >= 2): 
-				make_stab_cutout(center_x + Decimal('14'), center_y, center_x, center_y, angle)
-				make_stab_cutout(center_x - Decimal('14'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x + Decimal('14'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x - Decimal('14'), center_y, center_x, center_y, angle)
 			elif (unitwidth >= 1.75): 
-				make_stab_cutout(center_x + Decimal('12'), center_y, center_x, center_y, angle)
-				make_stab_cutout(center_x - Decimal('12'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x + Decimal('12'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x - Decimal('12'), center_y, center_x, center_y, angle)
 		elif (self.stab_type == "alps-at101"):
 			# These are mostly based on measurements. 
 			# If someone has datasheets, please let me know
 			if (unitwidth >= 6.5): 
-				make_stab_cutout(center_x + Decimal('45.3'), center_y, center_x, center_y, angle)
-				make_stab_cutout(center_x - Decimal('45.3'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x + Decimal('45.3'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x - Decimal('45.3'), center_y, center_x, center_y, angle)
 			elif (unitwidth >= 6.25): 
-				make_stab_cutout(center_x + Decimal('41.86'), center_y, center_x, center_y, angle)
-				make_stab_cutout(center_x - Decimal('41.86'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x + Decimal('41.86'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x - Decimal('41.86'), center_y, center_x, center_y, angle)
 			elif (unitwidth >= 2.75): 
-				make_stab_cutout(center_x + Decimal('20.5'), center_y, center_x, center_y, angle)
-				make_stab_cutout(center_x - Decimal('20.5'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x + Decimal('20.5'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x - Decimal('20.5'), center_y, center_x, center_y, angle)
 			elif (unitwidth >= 2): 
-				make_stab_cutout(center_x + Decimal('14'), center_y, center_x, center_y, angle)
-				make_stab_cutout(center_x - Decimal('14'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x + Decimal('14'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x - Decimal('14'), center_y, center_x, center_y, angle)
 			elif (unitwidth >= 1.75): 
-				make_stab_cutout(center_x + Decimal('12'), center_y, center_x, center_y, angle)
-				make_stab_cutout(center_x - Decimal('12'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x + Decimal('12'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x - Decimal('12'), center_y, center_x, center_y, angle)
 		
 	# Acoustics cuts maker
 
@@ -340,10 +340,10 @@ class PlateGenerator(object):
 			corners.append((Decimal('1') - self.stab_radius, (self.cutout_height / -Decimal('2')) + self.stab_radius, 270, 360))
 			
 		for line in line_segments:
-			draw_rotated_line(x + Decimal(str(line[0])), y + Decimal(str(line[1])), x + Decimal(str(line[2])), y + Decimal(str(line[3])), anchor_x, anchor_y, angle)
+			self.draw_rotated_line(x + Decimal(str(line[0])), y + Decimal(str(line[1])), x + Decimal(str(line[2])), y + Decimal(str(line[3])), anchor_x, anchor_y, angle)
 			
 		for arc in corners:
-			draw_rotated_arc(x + Decimal(str(arc[0])), y + Decimal(str(arc[1])), anchor_x, anchor_y, self.stab_radius, arc[2], arc[3], angle)
+			self.draw_rotated_arc(x + Decimal(str(arc[0])), y + Decimal(str(arc[1])), anchor_x, anchor_y, self.stab_radius, arc[2], arc[3], angle)
 		
 	# Draw switch cutout
 	def draw_switch_cutout(self, mm_center_x, mm_center_y, angle):
@@ -354,20 +354,20 @@ class PlateGenerator(object):
 		mm_x_right = mm_center_x + (self.cutout_width / Decimal('2'));
 		
 		# First draw the line segments: top, bottom, left, right
-		draw_rotated_line(mm_x_left + self.cutout_radius, mm_y_top, mm_x_right - self.cutout_radius, mm_y_top, 
+		self.draw_rotated_line(mm_x_left + self.cutout_radius, mm_y_top, mm_x_right - self.cutout_radius, mm_y_top, 
 		mm_center_x, mm_center_y, angle)
-		draw_rotated_line(mm_x_left + self.cutout_radius, mm_y_bottom, mm_x_right - self.cutout_radius, mm_y_bottom, 
+		self.draw_rotated_line(mm_x_left + self.cutout_radius, mm_y_bottom, mm_x_right - self.cutout_radius, mm_y_bottom, 
 		mm_center_x, mm_center_y, angle)
-		draw_rotated_line(mm_x_left, mm_y_top - self.cutout_radius, mm_x_left, mm_y_bottom + self.cutout_radius, 
+		self.draw_rotated_line(mm_x_left, mm_y_top - self.cutout_radius, mm_x_left, mm_y_bottom + self.cutout_radius, 
 		mm_center_x, mm_center_y, angle)
-		draw_rotated_line(mm_x_right, mm_y_top - self.cutout_radius, mm_x_right, mm_y_bottom + self.cutout_radius, 
+		self.draw_rotated_line(mm_x_right, mm_y_top - self.cutout_radius, mm_x_right, mm_y_bottom + self.cutout_radius, 
 		mm_center_x, mm_center_y, angle)
 		
 		# Now render corner arcs: top left, top right, bottom left, bottom right
-		draw_rotated_arc(mm_x_left + self.cutout_radius, mm_y_top - self.cutout_radius, mm_center_x, mm_center_y, self.cutout_radius, Decimal('90'), Decimal('180'), angle)
-		draw_rotated_arc(mm_x_right - self.cutout_radius, mm_y_top - self.cutout_radius, mm_center_x, mm_center_y, self.cutout_radius, Decimal('0'), Decimal('90'), angle)
-		draw_rotated_arc(mm_x_left + self.cutout_radius, mm_y_bottom + self.cutout_radius, mm_center_x, mm_center_y, self.cutout_radius, Decimal('180'), Decimal('270'), angle)
-		draw_rotated_arc(mm_x_right - self.cutout_radius, mm_y_bottom + self.cutout_radius, mm_center_x, mm_center_y, self.cutout_radius, Decimal('270'), Decimal('360'), angle)
+		self.draw_rotated_arc(mm_x_left + self.cutout_radius, mm_y_top - self.cutout_radius, mm_center_x, mm_center_y, self.cutout_radius, Decimal('90'), Decimal('180'), angle)
+		self.draw_rotated_arc(mm_x_right - self.cutout_radius, mm_y_top - self.cutout_radius, mm_center_x, mm_center_y, self.cutout_radius, Decimal('0'), Decimal('90'), angle)
+		self.draw_rotated_arc(mm_x_left + self.cutout_radius, mm_y_bottom + self.cutout_radius, mm_center_x, mm_center_y, self.cutout_radius, Decimal('180'), Decimal('270'), angle)
+		self.draw_rotated_arc(mm_x_right - self.cutout_radius, mm_y_bottom + self.cutout_radius, mm_center_x, mm_center_y, self.cutout_radius, Decimal('270'), Decimal('360'), angle)
 		
 		
 	# Use the functions above to render an entire switch - Cutout, stabs, and all
@@ -391,8 +391,8 @@ class PlateGenerator(object):
 		
 		# Then, rotate the points if angle != 0
 		if (switch.angle != Decimal('0')):
-			rotated_upper_left_coords = rotate_point_around_anchor(mm_x, mm_y, switch.rotx, switch.roty, switch.angle)
-			rotated_central_coords = rotate_point_around_anchor(mm_center_x, mm_center_y, switch.rotx, switch.roty, switch.angle)
+			rotated_upper_left_coords = self.rotate_point_around_anchor(mm_x, mm_y, switch.rotx, switch.roty, switch.angle)
+			rotated_central_coords = self.rotate_point_around_anchor(mm_center_x, mm_center_y, switch.rotx, switch.roty, switch.angle)
 			
 			mm_x = rotated_upper_left_coords[0]
 			mm_y = rotated_upper_left_coords[1]
@@ -401,14 +401,14 @@ class PlateGenerator(object):
 			mm_center_y = rotated_central_coords[1]
 		
 		# Draw main switch cutout
-		draw_switch_cutout(mm_center_x, mm_center_y, switch.angle + switch.cutout_angle)
+		self.draw_switch_cutout(mm_center_x, mm_center_y, switch.angle + switch.cutout_angle)
 		
 		# Adjust width for vertically tall keys, and generate stabs
 		apparent_width = switch.width;
 		if (switch.width < switch.height):
 			apparent_width = switch.height;
 		
-		generate_stabs(mm_center_x, mm_center_y, switch.angle + switch.stab_angle, apparent_width)
+		self.generate_stabs(mm_center_x, mm_center_y, switch.angle + switch.stab_angle, apparent_width)
 		
 
 	# Generate switch cutout sizes
@@ -447,7 +447,7 @@ class PlateGenerator(object):
 	def generate_plate(self):
 
 		# Init vars
-		initialize_variables()
+		self.initialize_variables()
 
 		# If debug matrix is on, make sth generic
 		if (self.debug_use_generic_matrix):
@@ -496,7 +496,7 @@ class PlateGenerator(object):
 				if isinstance(key, str):
 				
 					# First, we simply make the switch
-					current_switch = Switch(self.current_x, self.current_y)
+					current_switch = self.Switch(self.current_x, self.current_y)
 					
 					# Then, adjust the x coord for next switch
 					self.current_x += self.current_width
@@ -527,6 +527,10 @@ class PlateGenerator(object):
 						# Otherwise, append
 						self.current_x += self.current_offset_x
 						self.current_y -= self.current_offset_y
+						current_switch.x += self.current_offset_x
+						current_switch.y -= self.current_offset_y
+						self.current_offset_x = Decimal('0')
+						self.current_offset_y = Decimal('0')
 					
 					# Deal with some certain cases
 					
@@ -541,7 +545,7 @@ class PlateGenerator(object):
 					all_switches.append(current_switch)
 					
 					# Reset the fields to their defaults
-					reset_key_parameters()
+					self.reset_key_parameters()
 					
 				# Otherwise, it's a data dictionary. We must parse it properly
 				else:
@@ -601,19 +605,22 @@ class PlateGenerator(object):
 		# At this point, the keys are built.
 		# Render each one by one. 
 		for switch in all_switches:
-			render_switch(switch)
+			self.render_switch(switch)
 
 		# Draw outer bounds - top, bottom, left, right
-		modelspace.add_line((0, 0), (max_width * self.unit_height, 0))
-		modelspace.add_line((0, max_height * self.unit_height), (max_width * self.unit_height, max_height * self.unit_height))
-		modelspace.add_line((0, 0), (0, max_height * self.unit_height))
-		modelspace.add_line((max_width * self.unit_height, 0), (max_width * self.unit_height, max_height * self.unit_height))
+		self.modelspace.add_line((0, 0), (max_width * self.unit_height, 0))
+		self.modelspace.add_line((0, max_height * self.unit_height), (max_width * self.unit_height, max_height * self.unit_height))
+		self.modelspace.add_line((0, 0), (0, max_height * self.unit_height))
+		self.modelspace.add_line((max_width * self.unit_height, 0), (max_width * self.unit_height, max_height * self.unit_height))
 			
 		if (self.debug_log):
 			print("Complete! Saving plate to specified output")
 
 		if (self.output_method == "file"):
-			plate.saveas(self.filename + '.dxf')
+			self.plate.saveas(self.filename + '.dxf')
 		else:
-			plate.write(sys.stdout)
+			self.plate.write(sys.stdout)
 			
+if __name__ == "__main__":
+	gen = PlateGenerator()
+	gen.generate_plate()

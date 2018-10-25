@@ -377,13 +377,19 @@ class PlateGenerator(object):
 		
 	# Use the functions above to render an entire switch - Cutout, stabs, and all
 	def render_switch(self, switch):
+	
+		mm_x = Decimal('0')
+		mm_y = Decimal('0')
 		
 		# Coord differs for regular vs rotated
 		if (switch.rotx != 0 or switch.roty != 0 or switch.angle != 0):
 			# rotx and roty are the raw base coords for anchor
 			# Then, upper left is offset from there
 			mm_x = (switch.rotx + switch.offset_x) * self.unit_width
-			mm_y = -(switch.roty + switch.offset_y) * self.unit_height
+			mm_y = (-switch.roty - switch.offset_y) * self.unit_height
+			
+			# Confirmed coords are correct at this point
+			# Something going haywire after this
 			
 		else:
 			# Otherwise, derive mm based on x and y in units

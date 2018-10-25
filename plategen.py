@@ -99,9 +99,6 @@ class PlateGenerator(object):
 		self.cutout_width = Decimal('0')
 		self.cutout_height = Decimal('0')
 
-		# Input data
-		self.input_data = ""
-
 		# Used for parsing
 		self.reset_key_parameters()
 		self.current_rotx = Decimal('0')
@@ -482,32 +479,29 @@ class PlateGenerator(object):
 			print("Unsupported output method specified", file=sys.stderr)
 			exit(1)
 
-	def generate_plate(self):
+	def generate_plate(self, input_data=None):
 
 		# Init vars
 		self.initialize_variables()
 
 		# If debug matrix is on, make sth generic
-		if (self.debug_use_generic_matrix):
-			self.input_data = self.debug_matrix_data
-		# Otherwise, take from stdin
-		else:
-			self.input_data = sys.stdin.read()
+		if not input_data:
+			input_data = self.debug_matrix_data
 			
 		# Sanitize by removing \" (KLE's literal " for a label)
-		#self.input_data = self.input_data.replace('\n', '')
-		#self.input_data = self.input_data.replace(r'\"', '')
+		#input_data = input_data.replace('\n', '')
+		#input_data = input_data.replace(r'\"', '')
 
 		# TODO: Filter out improper quotes from " being in a label!
 
 		if (self.debug_log):
 			print("Filtered input data:")
-			print(self.input_data)
+			print(input_data)
 			print("")
 
 		# Parse KLE data
 		all_switches = []
-		json_data = json5.loads('[' + self.input_data + ']')
+		json_data = json5.loads('[' + input_data + ']')
 
 		for row in json_data:
 			if (self.debug_log):
@@ -681,4 +675,5 @@ class PlateGenerator(object):
 			
 if __name__ == "__main__":
 	gen = PlateGenerator()
-	gen.generate_plate()
+	input_data = sys.stdin.read()
+	gen.generate_plate(input_data)

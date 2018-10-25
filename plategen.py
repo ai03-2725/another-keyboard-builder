@@ -32,7 +32,7 @@ from decimal import *
 class PlateGenerator(object):
 
 	#init 
-	def __init__(self):
+	def __init__(self, arg_ct, arg_cr, arg_st, arg_sr, arg_at, arg_ar, arg_uw, arg_uh, arg_om, arg_of, arg_db):
 
 		# Set up decimal and mpmath
 		getcontext().prec = 50
@@ -44,34 +44,38 @@ class PlateGenerator(object):
 		self.modelspace = self.plate.modelspace()
 		
 		# Cutout type: mx, alps
-		self.cutout_type = "mx"
+		self.cutout_type = arg_ct
 
 		# Cutout radius: The fillet radius ( 0 <= x <= 1/2 cutout width or height )
-		self.cutout_radius = Decimal('0.5')
+		self.cutout_radius = Decimal(arg_cr)
 
 		# Stab type: mx-simple, large-cuts, alps-aek, alps-at101
-		self.stab_type = "mx-simple"
+		self.stab_type = arg_st
 
 		# Stab radius: The fillet radius for stab cutouts ( 0 <= x <= 1 )
-		self.stab_radius = Decimal('0.5')
+		self.stab_radius = Decimal(arg_sr)
 
-		# Korean cuts: The cutouts typically found on kustoms beside the switches.
+		# Acoustic cuts: The cutouts typically found on high end plates beside the switches.
 		# This script only handles the thin short cuts vertically beside each switch cut, not the large ones, i.e. between fn row and alphas.
 		# none = disabled, typical = 1.5-1.75U only, extreme = On 1.5-2.75U
-		self.koreancuts_type = "typical"
+		self.acoustics_type = arg_at
+		
+		# Acoustic radius: Fillet radius for cuts mentioned above.
+		self.acoustics_radius = arg_ar
+		
 
 		# Unit size (i.e. 1U = 19.05mm). ( 0 <= x <= inf, cap at 1000 for now )
-		self.unit_width = Decimal('19.05')
-		self.unit_height = Decimal('19.05')
+		self.unit_width = Decimal(arg_uw)
+		self.unit_height = Decimal(arg_uh)
 
 		# Output settings. Method can be file or stdout. self.filename is ignored if self.output_method is set to stdout
-		self.output_method = "stdout"
-		self.filename = "plate"
+		self.output_method = arg_om
+		self.filename = arg_of
 
 		#== Debug parameters ==#
 
 		# Tell user everything about what's going on and spam the console?
-		self.debug_log = False
+		self.debug_log = arg_db
 
 		# Runtime vars that are often systematically changed or reset
 
@@ -116,17 +120,6 @@ class PlateGenerator(object):
 	#=================================#
 	#           Functions             #
 	#=================================#
-
-
-	# Key outline maker. Width and height in Units (U)
-	# TODO: Fix this
-	def make_key_outline(x, y, width, height):
-
-		# Draw sides - top, bottom, left, right
-		self.modelspace.add_line((x, y), (x + (width * self.unit_width), y))
-		self.modelspace.add_line((x, y - (height * self.unit_height)), (x + (width * self.unit_width), y - (height * self.unit_height)))
-		self.modelspace.add_line((x, y), (x, y - (height * self.unit_height)))
-		self.modelspace.add_line((x + (width * self.unit_width), y), (x + (width * self.unit_width), y - (height * self.unit_height)))
 		
 	# Check if string is valid number
 	# Credits to https://stackoverflow.com/questions/4138202/using-isdigit-for-floats
@@ -321,15 +314,15 @@ class PlateGenerator(object):
 		
 		if (self.cutout_type == "mx" or self.cutout_type == "alps"):
 			
-			line_segments.append((Decimal('-1') + self.stab_radius, (self.cutout_height / Decimal('2')), Decimal('1') - self.stab_radius, (self.cutout_height / Decimal('2'))))
-			line_segments.append((Decimal('-1') + self.stab_radius, (self.cutout_height / -Decimal('2')), Decimal('1') - self.stab_radius, (self.cutout_height / -Decimal('2'))))
-			line_segments.append((Decimal('-1'), (self.cutout_height / Decimal('2')) - self.stab_radius, Decimal('-1'), (self.cutout_height / -Decimal('2')) + self.stab_radius))
-			line_segments.append((Decimal('1'), (self.cutout_height / Decimal('2')) - self.stab_radius, Decimal('1'), (self.cutout_height / -Decimal('2')) + self.stab_radius))
+			line_segments.append((Decimal('-1') + self.acoustics_radius, (self.cutout_height / Decimal('2')), Decimal('1') - self.acoustics_radius, (self.cutout_height / Decimal('2'))))
+			line_segments.append((Decimal('-1') + self.acoustics_radius, (self.cutout_height / -Decimal('2')), Decimal('1') - self.acoustics_radius, (self.cutout_height / -Decimal('2'))))
+			line_segments.append((Decimal('-1'), (self.cutout_height / Decimal('2')) - self.acoustics_radius, Decimal('-1'), (self.cutout_height / -Decimal('2')) + self.acoustics_radius))
+			line_segments.append((Decimal('1'), (self.cutout_height / Decimal('2')) - self.acoustics_radius, Decimal('1'), (self.cutout_height / -Decimal('2')) + self.acoustics_radius))
 			
-			corners.append((Decimal('-1') + self.stab_radius, (self.cutout_height / Decimal('2')) - self.stab_radius, 90, 180))
-			corners.append((Decimal('1') - self.stab_radius, (self.cutout_height / Decimal('2')) - self.stab_radius, 0, 90))
-			corners.append((Decimal('-1') + self.stab_radius, (self.cutout_height / -Decimal('2')) + self.stab_radius, 180, 270))
-			corners.append((Decimal('1') - self.stab_radius, (self.cutout_height / -Decimal('2')) + self.stab_radius, 270, 360))
+			corners.append((Decimal('-1') + self.acoustics_radius, (self.cutout_height / Decimal('2')) - self.acoustics_radius, 90, 180))
+			corners.append((Decimal('1') - self.acoustics_radius, (self.cutout_height / Decimal('2')) - self.acoustics_radius, 0, 90))
+			corners.append((Decimal('-1') + self.acoustics_radius, (self.cutout_height / -Decimal('2')) + self.acoustics_radius, 180, 270))
+			corners.append((Decimal('1') - self.acoustics_radius, (self.cutout_height / -Decimal('2')) + self.acoustics_radius, 270, 360))
 			
 		for line in line_segments:
 			self.draw_rotated_line(x + Decimal(str(line[0])), y + Decimal(str(line[1])), x + Decimal(str(line[2])), y + Decimal(str(line[3])), anchor_x, anchor_y, angle)
@@ -665,19 +658,22 @@ if __name__ == "__main__":
 	
 	# Note: The args will be fed into Decimal(), which takes strings
 	
-	parser.add_argument("-ct", "--cutout-type", help="Switch cutout type. Supported: mx, alps",type=str)
-	parser.add_argument("-cr", "--cutout-radius", help="Switch cutout fillet radius.", type=str)
-	parser.add_argument("-st", "--stab-type", help="Stabilizer type. Supported: mx-simple, large-cuts, alps-aek, alps-at101", type=str)
-	parser.add_argument("-sr", "--stab-radius", help="Stabilizer cutout fillet radius.", type=str)
-	parser.add_argument("-at", "--acoustics-type", help="Acoustic cutouts type. Supported: none, typical, extreme", type=str)
-	parser.add_argument("-ar", "--acoustics-radius", help="Acoustic cutouts fillet radius.", type=str)
-	parser.add_argument("-uw", "--unit-width", help="Key unit width. Default: 19.05", type=str)
-	parser.add_argument("-uh", "--unit-height", help="Key unit height. Default: 19.05", type=str)
-	parser.add_argument("-om", "--output-method", help="The save method for data. Supported: stdout, file", type=str)
-	parser.add_argument("-of", "--output-filename", help="Output file name if using file output-method.", type=str)	
-	parser.add_argument("--debug-log", help="Spam output with useless info.", action="store_true")
+	parser.add_argument("-ct", "--cutout-type", help="Switch cutout type. Supported: mx, alps; Default: mx", type=str, default='mx')
+	parser.add_argument("-cr", "--cutout-radius", help="Switch cutout fillet radius. Default: 0.5", type=str, default='0.5')
+	parser.add_argument("-st", "--stab-type", help="Stabilizer type. Supported: mx-simple, large-cuts, alps-aek, alps-at101; Default: mx-simple", type=str, default='mx-simple')
+	parser.add_argument("-sr", "--stab-radius", help="Stabilizer cutout fillet radius. Default: 0.5", type=str, default='0.5')
+	parser.add_argument("-at", "--acoustics-type", help="Acoustic cutouts type. Supported: none, typical, extreme; Default: none", type=str, default='none')
+	parser.add_argument("-ar", "--acoustics-radius", help="Acoustic cutouts fillet radius. Default: 0.5", type=str, default='0.5')
+	parser.add_argument("-uw", "--unit-width", help="Key unit width. Default: 19.05", type=str, default='19.05')
+	parser.add_argument("-uh", "--unit-height", help="Key unit height. Default: 19.05", type=str, default='19.05')
+	parser.add_argument("-om", "--output-method", help="The save method for data. Supported: stdout, file; Default: stdout", type=str, default='stdout')
+	parser.add_argument("-of", "--output-filename", help="Output file name if using file output-method. Default: plate.dxf", type=str, default='plate.dxf')	
+	parser.add_argument("--debug-log", help="Spam output with useless info.", action="store_true", default = False)
 	
+	args = parser.parse_args()
 	
-	gen = PlateGenerator()
+	gen = PlateGenerator(args.cutout_type, args.cutout_radius, args.stab_type, args.stab_radius, args.acoustics_type, args.acoustics_radius, args.unit_width, args.unit_height, 
+	args.output_method, args.output_filename, args.debug_log)
+	
 	input_data = sys.stdin.read()
 	gen.generate_plate(input_data)

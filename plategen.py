@@ -383,7 +383,7 @@ class PlateGenerator(object):
 			# rotx and roty are the raw base coords for anchor
 			# Then, upper left is offset from there
 			mm_x = (switch.rotx + switch.offset_x) * self.unit_width
-			mm_y = (switch.roty + switch.offset_y) * self.unit_height
+			mm_y = -(switch.roty + switch.offset_y) * self.unit_height
 			
 		else:
 			# Otherwise, derive mm based on x and y in units

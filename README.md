@@ -9,8 +9,9 @@ Alternate generators don't have either the features or exactness that designers 
 - A variety of cutout options to meet the requirements of each plate.
 - Exactness. No more 13.99999mm or 14.00001mm cutouts; this generator will always use exact, accurate dimensions.
 
-### Usage
-todo
+### Requirements:
+- Python 3.7
+- Everything in requirements.txt
 
 ### Issues
 - Still in progress

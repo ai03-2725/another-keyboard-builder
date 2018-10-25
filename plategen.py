@@ -420,11 +420,15 @@ class PlateGenerator(object):
 			mm_center_y = rotated_central_coords[1]
 			
 			# Do some calculations to see if a rotated switch exceeds current max boundaries
+			
+			unrotated_x = (switch.rotx + switch.offset_x) * self.unit_width
+			unrotated_y = (-switch.roty - switch.offset_y) * self.unit_height
+			
 			corners = []
-			corners.append((mm_x, mm_y))
-			corners.append((mm_x + (switch.width * self.unit_width), mm_y))
-			corners.append((mm_x, mm_y - (switch.height * self.unit_height)))
-			corners.append((mm_x + (switch.width * self.unit_width), mm_y - (switch.height * self.unit_height)))
+			corners.append((unrotated_x, unrotated_y))
+			corners.append((unrotated_x + (switch.width * self.unit_width), unrotated_y))
+			corners.append((unrotated_x, unrotated_y - (switch.height * self.unit_height)))
+			corners.append((unrotated_x + (switch.width * self.unit_width), unrotated_y - (switch.height * self.unit_height)))
 			
 			for corner in corners:
 				rotated_corner = self.rotate_point_around_anchor(corner[0], corner[1], mm_center_x, mm_center_y, switch.angle)

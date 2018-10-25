@@ -24,6 +24,7 @@
 import ezdxf
 import sys
 import json5
+import argparse
 
 from mpmath import *
 from decimal import *
@@ -69,23 +70,8 @@ class PlateGenerator(object):
 
 		#== Debug parameters ==#
 
-		# Draw key outlines?
-		self.debug_draw_key_outline = False
-		# Use generic matrix specified in self.debug_matrix_data below?
-		self.debug_use_generic_matrix = False
 		# Tell user everything about what's going on and spam the console?
 		self.debug_log = False
-		# Write incomplete dxf if end of input data is reached unexpectedly while parsing?
-		self.debug_write_incomplete = False
-		# Debug matrix data
-		self.debug_matrix_data = """
-		[{x:1,a:7},"","","","","","","","","","","","",{w:2},""],
-		[{w:1.5},"","","","","","","","","","","","","",{w:1.5},""],
-		[{w:1.75},"","","","","","","","","","","","",{w:2.25},""],
-		[{w:2.25},"","","","","","","","","","","",{w:2.75},""],
-		[{w:1.25},"",{w:1.25},"",{w:1.25},"",{w:6.25},"",{w:1.25},"",{w:1.25},"",{w:1.25},"",{w:1.25},""],
-		[{r:15,rx:0.5,ry:0.5,y:-0.5,x:-0.5},""]
-		"""
 
 		# Runtime vars that are often systematically changed or reset
 
@@ -674,6 +660,24 @@ class PlateGenerator(object):
 			self.plate.write(sys.stdout)
 			
 if __name__ == "__main__":
+
+	parser = argparse.ArgumentParser(description='Create a plate DXF based on KLE raw data.')
+	
+	# Note: The args will be fed into Decimal(), which takes strings
+	
+	parser.add_argument("-ct", "--cutout-type", help="Switch cutout type. Supported: mx, alps",type=str)
+	parser.add_argument("-cr", "--cutout-radius", help="Switch cutout fillet radius.", type=str)
+	parser.add_argument("-st", "--stab-type", help="Stabilizer type. Supported: mx-simple, large-cuts, alps-aek, alps-at101", type=str)
+	parser.add_argument("-sr", "--stab-radius", help="Stabilizer cutout fillet radius.", type=str)
+	parser.add_argument("-at", "--acoustics-type", help="Acoustic cutouts type. Supported: none, typical, extreme", type=str)
+	parser.add_argument("-ar", "--acoustics-radius", help="Acoustic cutouts fillet radius.", type=str)
+	parser.add_argument("-uw", "--unit-width", help="Key unit width. Default: 19.05", type=str)
+	parser.add_argument("-uh", "--unit-height", help="Key unit height. Default: 19.05", type=str)
+	parser.add_argument("-om", "--output-method", help="The save method for data. Supported: stdout, file", type=str)
+	parser.add_argument("-of", "--output-filename", help="Output file name if using file output-method.", type=str)	
+	parser.add_argument("--debug-log", help="Spam output with useless info.", action="store_true")
+	
+	
 	gen = PlateGenerator()
 	input_data = sys.stdin.read()
 	gen.generate_plate(input_data)

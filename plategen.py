@@ -4,8 +4,9 @@
 
 # By ai03
 # Credits to
-# Amtra5, Mxblue, Bakingpy for code-side assistance
-# Senter, Pwner, Kevinplus, Deskthority Wiki for measurements
+# Amtra5, Mxblue, Bakingpy,
+# Senter, Pwner, Kevinplus, Deskthority Wiki,
+# and any others I may have missed
 
 # Automated production of high-end mechanical keyboard plate data
 # No float rounding issues, pre-filleted corners, ready for production.
@@ -613,13 +614,19 @@ class PlateGenerator(object):
 							# _rs = Switch cutout angle offset for stabilizer OPPOSITE OF typical counterclockwise-from-xpositive
 							self.current_cutout_angle = -Decimal(str(j))
 							
-						if (str(i) == "x"):
+						elif (str(i) == "x"):
 							# x = X offset for next keys OR offset from rotation anchor (seriously kle?)
 							self.current_offset_x = Decimal(str(j))
 							
 						elif (str(i) == "y"):
 							# y = Y offset for next keys OR offset from rotation anchor (seriously kle?)
 							self.current_offset_y = Decimal(str(j))
+						
+						elif (str(i) == "d"):
+							# Key is decoration. Next.
+							self.reset_key_parameters()
+							continue
+						
 			# Finished row
 			self.current_y -= Decimal('1')
 			self.current_x = Decimal('0')

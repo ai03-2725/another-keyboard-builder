@@ -402,8 +402,11 @@ class PlateGenerator(object):
 		
 		# Then, rotate the points if angle != 0
 		if (switch.angle != Decimal('0')):
-			rotated_upper_left_coords = self.rotate_point_around_anchor(mm_x, mm_y, switch.rotx, switch.roty, switch.angle)
-			rotated_central_coords = self.rotate_point_around_anchor(mm_center_x, mm_center_y, switch.rotx, switch.roty, switch.angle)
+		
+			# This part is the issue
+		
+			rotated_upper_left_coords = self.rotate_point_around_anchor(mm_x, mm_y, (switch.rotx * self.unit_width), -(switch.roty * self.unit_height), switch.angle)
+			rotated_central_coords = self.rotate_point_around_anchor(mm_center_x, mm_center_y, (switch.rotx * self.unit_width), -(switch.roty * self.unit_height), switch.angle)
 			
 			mm_x = rotated_upper_left_coords[0]
 			mm_y = rotated_upper_left_coords[1]
@@ -514,6 +517,11 @@ class PlateGenerator(object):
 						# If set, store the value
 						current_switch.offset_x = self.current_offset_x
 						current_switch.offset_y = self.current_offset_y
+						
+						# Check and see if it's a y record
+						if (max_height > -self.current_roty - self.current_offset_y):
+							max_height = -self.current_roty - self.current_offset_y
+						
 					else:
 						# Otherwise, append
 						self.current_x += self.current_offset_x
@@ -522,14 +530,17 @@ class PlateGenerator(object):
 						current_switch.y -= self.current_offset_y
 						self.current_offset_x = Decimal('0')
 						self.current_offset_y = Decimal('0')
+						
+						# Check and see if it's a y record
+						if (max_height > self.current_y - self.current_height):
+							max_height = self.current_y - self.current_height
 					
 					# Then, adjust the x coord for next switch
 					self.current_x += self.current_width
-					# If this is a record, update properly
+					# If this is a x record, update properly
 					if (max_width < self.current_x):
 						max_width = self.current_x
-					if (max_height > self.current_y - Decimal('1')):
-						max_height = self.current_y - Decimal('1')
+					
 					
 					# And we adjust the fields as necessary.
 					# These default to 1 unless edited by a data field preceding

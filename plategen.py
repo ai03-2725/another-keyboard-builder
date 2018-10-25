@@ -10,6 +10,11 @@
 # Automated production of high-end mechanical keyboard plate data
 # No float rounding issues, pre-filleted corners, ready for production.
 
+# EXTRA SUPPORTED JSON FIELDS:
+# In addition to the KLE fields such as w: for width,
+# _rs: Rotate the stabilizers
+# _rc: Rotate switch cutout 
+
 #=================================#
 #                                 #
 #=================================#

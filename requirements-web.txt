@@ -1,0 +1,11 @@
+Click==7.0
+ezdxf==0.8.8
+Flask==1.0.2
+ItsDangerous==1.0.0
+Jinja2==2.10
+json5==0.6.1
+MarkupSafe==1.0
+mpmath==1.0.0
+pyparsing==2.2.2
+Werkzeug==0.14.1
+WTForms==2.2.1

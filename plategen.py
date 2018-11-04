@@ -14,7 +14,7 @@
 # EXTRA SUPPORTED JSON FIELDS:
 # In addition to the KLE fields such as w: for width,
 # _rs: Rotate the stabilizers
-# _rc: Rotate switch cutout 
+# _rc: Rotate switch cutout
 
 #=================================#
 #                                 #
@@ -31,7 +31,7 @@ from decimal import *
 
 class PlateGenerator(object):
 
-	#init 
+	#init
 	def __init__(self, arg_ct, arg_cr, arg_st, arg_sr, arg_at, arg_ar, arg_uw, arg_uh, arg_om, arg_of, arg_db):
 
 		# Set up decimal and mpmath
@@ -42,7 +42,7 @@ class PlateGenerator(object):
 		# Create blank dxf workspace
 		self.plate = ezdxf.new(dxfversion='AC1024')
 		self.modelspace = self.plate.modelspace()
-		
+
 		# Cutout type: mx, alps
 		self.cutout_type = arg_ct
 
@@ -59,10 +59,10 @@ class PlateGenerator(object):
 		# This script only handles the thin short cuts vertically beside each switch cut, not the large ones, i.e. between fn row and alphas.
 		# none = disabled, typical = 1.5-1.75U only, extreme = On 1.5-2.75U
 		self.acoustics_type = arg_at
-		
+
 		# Acoustic radius: Fillet radius for cuts mentioned above.
 		self.acoustics_radius = arg_ar
-		
+
 
 		# Unit size (i.e. 1U = 19.05mm). ( 0 <= x <= inf, cap at 1000 for now )
 		self.unit_width = Decimal(arg_uw)

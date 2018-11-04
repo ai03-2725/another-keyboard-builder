@@ -45,27 +45,46 @@
     <div class="container-fluid" style="margin-top: 50px; min-height: -webkit-calc(100vh - 50px); min-height: -moz-calc(100vh - 50px); min-height: calc(100vh - 50px);">
 		
 		<!-- Title -->
-		<div class="container text-center" style="margin-top: 15px; width: 90%; max-width: 1024px; margin: auto;">
+		<div class="container text-center" style="margin-top: 15px; width: 90%; max-width: 768px; margin: auto;">
 			<h1>ai03 Plate Generator</h1>
 			<p>An advanced plate generator which doesn't result in 13.99999mm cutouts.</p>
 			<p>Also fillets the cutouts so you don't have to waste hours later. Enjoy.</p>
 		</div>
 	
-		<div class="row text-center" style="width: 90%; max-width: 1024px; margin: auto; margin-top: 30px">
+		<div class="row text-center" style="width: 90%; max-width: 768px; margin: auto; margin-top: 30px">
 		
 		  <form  action="" method="post" role="form">
 			{{ form.csrf }}
-			<div class="form-group">
-			  <label for="kle-data">KLE Raw Data</label>
-			  <input type="text" class="form-control" id="kle-data" name="kle-data" placeholder="Paste raw data here">
+			<div class="form-group" style="margin: auto;">
+			  <h3 for="kle-data">KLE Raw Data</h3>
+			  <textarea type="text" class="form-control" id="kle-data" name="kle-data" placeholder="Paste raw data here" rows="5"></textarea>
 			</div>
-			<div class="form-group">
-				<label for="cutout-type">Switch Cutout Type</label>
-				<label class="radio-label"><input type="radio" name="cutout-type" value="mx"><p>MX</p></label>
-				<label class="radio-label"><input type="radio" name="cutout-type" value="mx"><p>Alps SKCM/SKCL</p></label>
+			<div class="form-group" style="margin: auto;">
+				<h3 for="cutout-type" style="margin-top: 30px">Switch Cutout Type</h3>
+				<br/>
+				<label class="radio-label" style="width: 100px; margin: auto; vertical-align: top"><input type="radio" name="cutout-type" value="mx"><p>Cherry MX</p></label>
+				<label class="radio-label" style="width: 100px; margin: auto; vertical-align: top"><input type="radio" name="cutout-type" value="alps"><p>Alps SKCM/SKCL</p></label>
 
 			</div>
-			<button type="submit" class="btn btn-success">Submit</button>
+			<div class="form-group" style="margin: auto;">
+				<h3 for="stab-type" style="margin-top: 30px">Stabilizer Cutout Type</h3>
+				<br/>
+				<label class="radio-label" style="width: 100px; margin: auto; vertical-align: top"><input type="radio" name="stab-type" value="mx-simple"><p>MX - Simple</p></label>
+				<label class="radio-label" style="width: 100px; margin: auto; vertical-align: top"><input type="radio" name="stab-type" value="large-cuts"><p>MX - Large Cuts</p></label>
+				<label class="radio-label" style="width: 100px; margin: auto; vertical-align: top"><input type="radio" name="stab-type" value="alps-aek"><p>Alps - AEK</p></label>
+				<label class="radio-label" style="width: 100px; margin: auto; vertical-align: top"><input type="radio" name="stab-type" value="alps-at101"><p>Alps - AT101</p></label>
+
+			</div>
+			<div class="form-group" style="margin: auto; margin-top: 30px;">
+			  <h3 for="kle-data">Switch Cutout Fillet Radius</h3>
+			  <input type="text" class="form-control" id="cutout-radius" name="cutout-radius" placeholder="0.5"></input>
+			</div>
+			<div class="form-group" style="margin: auto; margin-top: 30px;">
+			  <h3 for="kle-data">Stabilizer Cutout Fillet Radius</h3>
+			  <input type="text" class="form-control" id="stab-radius" name="stab-radius" placeholder="0.5"></input>
+			</div>
+			
+			<button type="submit" class="btn btn-success" style="margin-top: 30px">Submit</button>
 		  </form>
 		 
 		  <br>

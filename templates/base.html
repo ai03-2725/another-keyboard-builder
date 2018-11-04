@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <!-- Make page mobile-friendly -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Make chrome mobile color dark gray -->
+    <meta name="theme-color" content="#202020">
+
+    <!-- All the Bootstrap stuff -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <!-- Other header content -->
+    <title>ai03 - Keyboard Plate Generator</title>
+
+  </head>
+
+  <body style="background-size: cover;">
+    <!-- Navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid" style="max-width: 768px;">
+        <div class="navbar-header">
+          <img src="img/navbar/dropdown.png" type="button" class="navbar-toggle" height="40px" data-toggle="collapse" data-target="#navbar" style="border-color: transparent; margin: 5px;"></img>
+          <a class="navbar-brand" href="#"><img src="img/navbar/logo.png" style="height: 100%;"/></a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="navbar">
+          <p class="navbar-text collapse navbar-collapse" style="">ai03 Keyboards</p>
+          <ul class="nav navbar-nav">
+			<li><a href="https://kb.ai03.me">Keyboard Home</a></li>
+            <li><a href="https://kb.ai03.me/projects">Projects</a></li>
+            <li><a href="https://kb.ai03.me/wiki">Wiki</a></li>
+            <li class="active"><a href="#">Plate Generator</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Body content -->
+    <!-- The complex styling is to make the container fill vertical space accounting for navbar/padding for navbar -->
+    <div class="container-fluid" style="margin-top: 50px; min-height: -webkit-calc(100vh - 50px); min-height: -moz-calc(100vh - 50px); min-height: calc(100vh - 50px);">
+		
+		<!-- Title -->
+		<div class="container text-center" style="margin-top: 15px; width: 90%; max-width: 1024px; margin: auto;">
+			<h1>ai03 Plate Generator</h1>
+			<p>An advanced plate generator which doesn't result in 13.99999mm cutouts.</p>
+			<p>Also fillets the cutouts so you don't have to waste hours later. Enjoy.</p>
+		</div>
+	
+		<div class="row text-center" style="width: 90%; max-width: 1024px; margin: auto; margin-top: 30px">
+		
+		  <form  action="" method="post" role="form">
+			{{ form.csrf }}
+			<div class="form-group">
+			  <label for="kle-data">KLE Raw Data</label>
+			  <input type="text" class="form-control" id="kle-data" name="kle-data" placeholder="Paste raw data here">
+			</div>
+			<button type="submit" class="btn btn-success">Submit</button>
+		  </form>
+		 
+		  <br>
+				{% with messages = get_flashed_messages(with_categories=true) %}
+					{% if messages %}
+		 
+				{% for message in messages %}
+					{% if "Error" not in message[1]: %}
+						<div class="alert alert-info">
+						<strong>Success! </strong> {{ message[1] }}
+						</div>
+					{% endif %}
+		 
+					{% if "Error" in message[1]: %}
+						<div class="alert alert-warning">
+						{{ message[1] }}
+						</div>
+					{% endif %}
+				{% endfor %}
+					{% endif %}
+				{% endwith %}
+		
+		</div>
+	</div>
+  <body>
+</html>

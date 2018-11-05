@@ -104,29 +104,29 @@
 						Info
 					</button>
 					</label>
-					<select class="form-control form-control-lg">
+					<select id="cutout-type" name="cutout-type" class="form-control form-control-lg">
 						<option selected value="mx">MX</option>
 						<option value="alps">Alps</option>
 					</select>
 					
-					<label for="cutout-type" style="margin-top: 30px">Stabilizer Cutout Type
+					<label for="stab-type" style="margin-top: 30px">Stabilizer Cutout Type
 					<button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#infoStabType">
 						Info
 					</button>
 					</label>
-					<select class="form-control form-control-lg">
+					<select id="stab-type" name="stab-type" class="form-control form-control-lg">
 						<option selected value="mx-simple">MX - Simple</option>
 						<option value="large-cuts">MX - Large Cutouts</option>
 						<option value="alps-aek">Alps - AEK (2.25U wire on right shift)</option>
 						<option value="alps-at101">Alps - AT101 (2.75U wire on right shift)</option>
 					</select>
 					
-					<label for="cutout-type" style="margin-top: 30px">Acoustic Cutout Type
+					<label for="acoustic-type" style="margin-top: 30px">Acoustic Cutout Type
 					<button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#infoAcousticType">
 						Info
 					</button>
 					</label>
-					<select class="form-control form-control-lg">
+					<select id="acoustic-type" name="acoustic-type" class="form-control form-control-lg">
 						<option selected value="none">None</option>
 						<option value="typical">Typical</option>
 						<option value="extreme">Extreme</option>
@@ -137,15 +137,15 @@
 					<h2>Filleting</h2>
 					<p>Recommended 0.5mm for CNC, 1mm for laser-cutting.</p>
 					<div class="form-group" style="margin: auto; margin-top: 30px;">
-					  <label for="kle-data">Switch Cutout Fillet Radius</label>
+					  <label for="cutout-radius">Switch Cutout Fillet Radius</label>
 					  <input style="width: 80%; margin: auto;" type="text" class="form-control" id="cutout-radius" name="cutout-radius" value="0.5" placeholder="Radius, mm" required></input>
 					</div>
 					<div class="form-group" style="margin: auto; margin-top: 30px;">
-					  <label for="kle-data">Stabilizer Cutout Fillet Radius</label>
+					  <label for="stab-radius">Stabilizer Cutout Fillet Radius</label>
 					  <input style="width: 80%; margin: auto;" type="text" class="form-control" id="stab-radius" name="stab-radius" value="0.5" placeholder="Radius, mm" required></input>
 					</div>
 					<div class="form-group" style="margin: auto; margin-top: 30px;">
-					  <label for="kle-data">Acoustic Cutouts Fillet Radius</label>
+					  <label for="acoustic-radius">Acoustic Cutouts Fillet Radius</label>
 					  <input style="width: 80%; margin: auto;" type="text" class="form-control" id="acoustic-radius" name="acoustic-radius" value="0.5" placeholder="Radius, mm" required></input>
 					</div>
 				</div>
@@ -154,12 +154,12 @@
 					<h2>Advanced</h2>
 					<p>Best leave these alone unless you know what you are doing.</p>
 					<div class="form-group" style="margin: auto; margin-top: 30px;">
-					  <label for="kle-data">Horizontal Key Spacing</label>
-					  <input style="width: 80%; margin: auto;" type="text" class="form-control" id="cutout-radius" name="cutout-radius" value="19.05" placeholder="Unit Width, mm" required></input>
+					  <label for="unit-width">Horizontal Key Spacing</label>
+					  <input style="width: 80%; margin: auto;" type="text" class="form-control" id="unit-width" name="unit-width" value="19.05" placeholder="Unit Width, mm" required></input>
 					</div>
 					<div class="form-group" style="margin: auto; margin-top: 30px;">
-					  <label for="kle-data">Vertical Key Spacing</label>
-					  <input style="width: 80%; margin: auto;" type="text" class="form-control" id="stab-radius" name="stab-radius" value="19.05" placeholder="Unit Width, mm" required></input>
+					  <label for="unit-height">Vertical Key Spacing</label>
+					  <input style="width: 80%; margin: auto;" type="text" class="form-control" id="unit-height" name="unit-height" value="19.05" placeholder="Unit Width, mm" required></input>
 					</div>
 				</div>
 			</div>

@@ -78,6 +78,11 @@
 
 			<div class="form-group" style="margin: auto;">
 				<h3 for="kle-data">KLE Raw Data</h3>
+				<button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#infoKLEfields">
+					Important Info
+				</button>
+				<br/>
+				<br/>
 				<textarea type="text" class="form-control" id="kle-data" name="kle-data" placeholder="Paste raw data here" rows="5" required></textarea>
 			</div>
 			
@@ -168,7 +173,6 @@
 				<div class="modal-body">
 					<h4>MX</h4>
 					<p>For Cherry MX, MX Low Profile, and clones which fit 14x14mm cutouts.</p>
-					<br/>
 					<h4>Alps</h4>
 					<p>For Alps SKCM/SKCL, SKBM/SKBM, Matias, and derivative clones.</p>
 					
@@ -191,13 +195,10 @@
 				<div class="modal-body">
 					<h4>MX - Simple</h4>
 					<p>Modeled around the official Cherry MX datasheet, simplified into a rectangle.</p>
-					<br/>
 					<h4>MX - Large Cutouts</h4>
 					<p>A cutout noticeably larger than the official datasheet version.</p>
-					<br/>
 					<h4>Alps - AEK</h4>
 					<p>Alps stabilizers; uses 2.25U wire for right shift.</p>
-					<br/>
 					<h4>Alps - AT101</h4>
 					<p>Alps stabilizers; uses 2.75U wire for right shift.</p>
 				</div>
@@ -219,12 +220,32 @@
 				<div class="modal-body">
 					<h4>None</h4>
 					<p>Nothing whatsoever.</p>
-					<br/>
 					<h4>Typical</h4>
 					<p>Vertical cuts on each side of 1.5+U keys.</p>
-					<br/>
 					<h4>Extreme</h4>
 					<p>In addition to the typical cuts, adds vertical cuts on 2-3U stabilized keys.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="modal fade" id="infoKLEfields" tabindex="-1" role="dialog" aria-labelledby="infoKLEfields" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h3 class="modal-title">Additional KLE fields</h3>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					</button>
+				</div>
+				<div class="modal-body">
+					<p>In addition to the typical KLE data, you can add the following data fields to the key info:</p>
+					<h4>_rs</h4>
+					<p>Rotate the stabilizers. For example, <code>{_rs:180}</code> will flip stabilizers for bottom row keys.</p>
+					<h4>_rc</h4>
+					<p>Rotate the switch cutouts. For example, <code>{_rc:90}</code> will turn the cutout without rotating any other part of the key.</p>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

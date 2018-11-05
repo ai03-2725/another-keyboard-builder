@@ -13,6 +13,14 @@ app.config['SECRET_KEY'] = 'change me'.encode('utf8')
 @app.route('/img/<path:path>')
 def static_img(path):
     return send_from_directory('img', path)
+	
+@app.route('/favicon/<path:path>')
+def static_favicon(path):
+    return send_from_directory('favicon', path)
+	
+@app.route('/favicon.ico')
+def static_favicon_default(path):
+    return send_from_directory('favicon/favicon.ico', path)
 
 @app.route("/", methods=['GET'])
 def default_route():

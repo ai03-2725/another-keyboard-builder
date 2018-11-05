@@ -1,5 +1,6 @@
 from flask import Flask, render_template, flash, request, send_from_directory, send_file
 
+import datetime
 import plategen
 import io
 
@@ -73,10 +74,14 @@ def receive_data():
 	output_file.seek(0)
 	output_data.close()
 	
+	# Generate filename
+	date_time = datetime.datetime.now()
+	plate_name = 'plate-' + date_time.strftime("%Y%m%d-%H%M%S") + '.dxf'
+	
 	return send_file(
 		output_file,
 		as_attachment=True,
-        attachment_filename='plate.dxf',
+        attachment_filename=plate_name,
 		mimetype='application/dxf'
 	)
  

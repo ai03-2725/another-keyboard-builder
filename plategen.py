@@ -258,6 +258,32 @@ class PlateGenerator(object):
 		for arc in corners:
 			self.draw_rotated_arc(x + Decimal(str(arc[0])), y + Decimal(str(arc[1])), anchor_x, anchor_y, self.stab_radius, arc[2], arc[3], angle)
 			
+	# Acoustics cuts maker
+
+	def make_acoustic_cutout(self, x, y, anchor_x, anchor_y, angle):
+			
+		line_segments = []
+		corners = []
+		
+		if (self.cutout_type == "mx" or self.cutout_type == "alps"):
+			
+			line_segments.append((Decimal('-1') + self.acoustics_radius, (self.cutout_height / Decimal('2')), Decimal('1') - self.acoustics_radius, (self.cutout_height / Decimal('2'))))
+			line_segments.append((Decimal('-1') + self.acoustics_radius, (self.cutout_height / -Decimal('2')), Decimal('1') - self.acoustics_radius, (self.cutout_height / -Decimal('2'))))
+			line_segments.append((Decimal('-1'), (self.cutout_height / Decimal('2')) - self.acoustics_radius, Decimal('-1'), (self.cutout_height / -Decimal('2')) + self.acoustics_radius))
+			line_segments.append((Decimal('1'), (self.cutout_height / Decimal('2')) - self.acoustics_radius, Decimal('1'), (self.cutout_height / -Decimal('2')) + self.acoustics_radius))
+			
+			corners.append((Decimal('-1') + self.acoustics_radius, (self.cutout_height / Decimal('2')) - self.acoustics_radius, 90, 180))
+			corners.append((Decimal('1') - self.acoustics_radius, (self.cutout_height / Decimal('2')) - self.acoustics_radius, 0, 90))
+			corners.append((Decimal('-1') + self.acoustics_radius, (self.cutout_height / -Decimal('2')) + self.acoustics_radius, 180, 270))
+			corners.append((Decimal('1') - self.acoustics_radius, (self.cutout_height / -Decimal('2')) + self.acoustics_radius, 270, 360))
+			
+		for line in line_segments:
+			self.draw_rotated_line(x + Decimal(str(line[0])), y + Decimal(str(line[1])), x + Decimal(str(line[2])), y + Decimal(str(line[3])), anchor_x, anchor_y, angle)
+			
+		for arc in corners:
+			self.draw_rotated_arc(x + Decimal(str(arc[0])), y + Decimal(str(arc[1])), anchor_x, anchor_y, self.stab_radius, arc[2], arc[3], angle)
+		
+			
 	# Calls make stab cutout based on unit width and style
 	def generate_stabs(self, center_x, center_y, angle, unitwidth):
 
@@ -284,12 +310,12 @@ class PlateGenerator(object):
 				self.make_stab_cutout(center_x + Decimal('11.938'), center_y, center_x, center_y, angle)
 				self.make_stab_cutout(center_x - Decimal('11.938'), center_y, center_x, center_y, angle)
 				if (self.acoustics_type == "extreme"):
-					make_acoustic_cutout(center_x + Decimal('18.25'), center_y)
-					make_acoustic_cutout(center_x - Decimal('18.25'), center_y)
+					self.make_acoustic_cutout(center_x + Decimal('18.25'), center_y, center_x, center_y, angle)
+					self.make_acoustic_cutout(center_x - Decimal('18.25'), center_y, center_x, center_y, angle)
 			elif (unitwidth >= 1.5):
 				if (self.acoustics_type == "typical" or (self.acoustics_type == "extreme")):
-					make_acoustic_cutout(center_x + Decimal('11.6'), center_y)
-					make_acoustic_cutout(center_x - Decimal('11.6'), center_y)
+					self.make_acoustic_cutout(center_x + Decimal('11.6'), center_y, center_x, center_y, angle)
+					self.make_acoustic_cutout(center_x - Decimal('11.6'), center_y, center_x, center_y, angle)
 		elif (self.stab_type == "alps-aek"):
 			# These are mostly based on measurements. 
 			# If someone has datasheets, please let me know
@@ -324,31 +350,7 @@ class PlateGenerator(object):
 				self.make_stab_cutout(center_x + Decimal('12'), center_y, center_x, center_y, angle)
 				self.make_stab_cutout(center_x - Decimal('12'), center_y, center_x, center_y, angle)
 		
-	# Acoustics cuts maker
 
-	def make_acoustic_cutout(self, x, y, angle):
-			
-		line_segments = []
-		corners = []
-		
-		if (self.cutout_type == "mx" or self.cutout_type == "alps"):
-			
-			line_segments.append((Decimal('-1') + self.acoustics_radius, (self.cutout_height / Decimal('2')), Decimal('1') - self.acoustics_radius, (self.cutout_height / Decimal('2'))))
-			line_segments.append((Decimal('-1') + self.acoustics_radius, (self.cutout_height / -Decimal('2')), Decimal('1') - self.acoustics_radius, (self.cutout_height / -Decimal('2'))))
-			line_segments.append((Decimal('-1'), (self.cutout_height / Decimal('2')) - self.acoustics_radius, Decimal('-1'), (self.cutout_height / -Decimal('2')) + self.acoustics_radius))
-			line_segments.append((Decimal('1'), (self.cutout_height / Decimal('2')) - self.acoustics_radius, Decimal('1'), (self.cutout_height / -Decimal('2')) + self.acoustics_radius))
-			
-			corners.append((Decimal('-1') + self.acoustics_radius, (self.cutout_height / Decimal('2')) - self.acoustics_radius, 90, 180))
-			corners.append((Decimal('1') - self.acoustics_radius, (self.cutout_height / Decimal('2')) - self.acoustics_radius, 0, 90))
-			corners.append((Decimal('-1') + self.acoustics_radius, (self.cutout_height / -Decimal('2')) + self.acoustics_radius, 180, 270))
-			corners.append((Decimal('1') - self.acoustics_radius, (self.cutout_height / -Decimal('2')) + self.acoustics_radius, 270, 360))
-			
-		for line in line_segments:
-			self.draw_rotated_line(x + Decimal(str(line[0])), y + Decimal(str(line[1])), x + Decimal(str(line[2])), y + Decimal(str(line[3])), anchor_x, anchor_y, angle)
-			
-		for arc in corners:
-			self.draw_rotated_arc(x + Decimal(str(arc[0])), y + Decimal(str(arc[1])), anchor_x, anchor_y, self.stab_radius, arc[2], arc[3], angle)
-		
 	# Draw switch cutout
 	def draw_switch_cutout(self, mm_center_x, mm_center_y, angle):
 	

@@ -32,7 +32,7 @@ from decimal import *
 class PlateGenerator(object):
 
 	#init
-	def __init__(self, arg_ct, arg_cr, arg_st, arg_sr, arg_at, arg_ar, arg_uw, arg_uh, arg_om, arg_of, arg_db):
+	def __init__(self, arg_ct, arg_cr, arg_st, arg_sr, arg_at, arg_ar, arg_uw, arg_uh, arg_db):
 
 		# Set up decimal and mpmath
 		getcontext().prec = 50
@@ -67,10 +67,6 @@ class PlateGenerator(object):
 		# Unit size (i.e. 1U = 19.05mm). ( 0 <= x <= inf, cap at 1000 for now )
 		self.unit_width = Decimal(arg_uw)
 		self.unit_height = Decimal(arg_uh)
-
-		# Output settings. Method can be file or stdout. self.filename is ignored if self.output_method is set to stdout
-		self.output_method = arg_om
-		self.filename = arg_of
 
 		#== Debug parameters ==#
 
@@ -453,12 +449,7 @@ class PlateGenerator(object):
 			print("Unit size must be between 0 and 1000", file=sys.stderr)
 			exit(1)
 
-		# Check if output method is legal
-		if (self.output_method != "stdout" and self.output_method != "file"):
-			print("Unsupported output method specified", file=sys.stderr)
-			exit(1)
-
-	def generate_plate(self, input_data=None):
+	def generate_plate(self, file, input_data=None):
 
 		# Init vars
 		self.initialize_variables()
@@ -647,10 +638,11 @@ class PlateGenerator(object):
 		if (self.debug_log):
 			print("Complete! Saving plate to specified output")
 
-		if (self.output_method == "file"):
-			self.plate.saveas(self.filename + '.dxf')
-		else:
-			self.plate.write(sys.stdout)
+		#if (file == "stdout"):
+		#	self.plate.write(sys.stdout)
+		#else:
+		self.plate.write(file)
+		
 			
 if __name__ == "__main__":
 
@@ -666,14 +658,14 @@ if __name__ == "__main__":
 	parser.add_argument("-ar", "--acoustics-radius", help="Acoustic cutouts fillet radius. Default: 0.5", type=str, default='0.5')
 	parser.add_argument("-uw", "--unit-width", help="Key unit width. Default: 19.05", type=str, default='19.05')
 	parser.add_argument("-uh", "--unit-height", help="Key unit height. Default: 19.05", type=str, default='19.05')
-	parser.add_argument("-om", "--output-method", help="The save method for data. Supported: stdout, file; Default: stdout", type=str, default='stdout')
-	parser.add_argument("-of", "--output-filename", help="Output file name if using file output-method. Default: plate.dxf", type=str, default='plate.dxf')	
+	#parser.add_argument("-om", "--output-method", help="The save method for data. Supported: stdout, file; Default: stdout", type=str, default='stdout')
+	#parser.add_argument("-of", "--output-file", help="Output file name if using file output-method. Default: plate.dxf", type=str, default='plate.dxf')	
 	parser.add_argument("--debug-log", help="Spam output with useless info.", action="store_true", default = False)
 	
 	args = parser.parse_args()
 	
 	gen = PlateGenerator(args.cutout_type, args.cutout_radius, args.stab_type, args.stab_radius, args.acoustics_type, args.acoustics_radius, args.unit_width, args.unit_height, 
-	args.output_method, args.output_filename, args.debug_log)
+	"stdout", "", args.debug_log)
 	
 	input_data = sys.stdin.read()
-	gen.generate_plate(input_data)
+	gen.generate_plate("stdout", input_data)

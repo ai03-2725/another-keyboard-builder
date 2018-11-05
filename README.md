@@ -48,3 +48,4 @@ In addition to feeding in typical Keyboard-Layout-Editor data, custom fields may
 ## Todo
 - More stabilizer cutout options.
 - More switch cutout options.
+- Fix certain rotated switches dying. However, this is mostly due to awful KLE syntax, so I don't plan to repair it soon.

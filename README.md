@@ -1,6 +1,9 @@
 # Another Keyboard Builder
 An exact mechanical keyboard plate creator that doesn't result in 13.99999mm cutouts
 
+## Use it here:
+[kbplate.ai03.me](http://kbplate.ai03.me/)
+
 ## Why?
 - Alternate generators don't have either the features or exactness that designers need.
 - This plate generator is designed to save keyboard designers significant amounts of time, while also providing top-notch accuracy required for designs costing hundreds of dollars.
@@ -12,12 +15,12 @@ An exact mechanical keyboard plate creator that doesn't result in 13.99999mm cut
 
 ## Usage
 
-The command itself:
+Plategen as a standalone tool:
 ```
 plategen.py [-h] [-ct CUTOUT_TYPE] [-cr CUTOUT_RADIUS] [-st STAB_TYPE]
                    [-sr STAB_RADIUS] [-at ACOUSTICS_TYPE]
                    [-ar ACOUSTICS_RADIUS] [-uw UNIT_WIDTH] [-uh UNIT_HEIGHT]
-                   [-om OUTPUT_METHOD] [-of OUTPUT_FILENAME] [--debug-log]
+                   [--debug-log]
 ```
 Run `python plategen.py -h` to see detailed information on each argument.
 
@@ -25,6 +28,9 @@ An example of generating based on raw data in a file:
 ```
 cat kle-raw | python plategen.py > plate.dxf
 ```
+
+Hosting:
+Simply run web.py with requirements installed.
 
 ## Additional Options
 
@@ -37,7 +43,7 @@ In addition to feeding in typical Keyboard-Layout-Editor data, custom fields may
 
 ## Requirements:
 - Python 3.7
-- Everything in requirements.txt
+- Everything in requirements.txt (or requirements-web.txt if hosting web service)
 
 ## Todo
 - More stabilizer cutout options.

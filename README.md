@@ -15,7 +15,9 @@ An exact mechanical keyboard plate creator that doesn't result in 13.99999mm cut
 
 ## Usage
 
-Plategen as a standalone tool:
+There are two methods of use: As a CLI tool, or as a web app.
+
+#### Plategen as a standalone tool:
 ```
 plategen.py [-h] [-ct CUTOUT_TYPE] [-cr CUTOUT_RADIUS] [-st STAB_TYPE]
                    [-sr STAB_RADIUS] [-at ACOUSTICS_TYPE]
@@ -28,9 +30,10 @@ An example of generating based on raw data in a file:
 ```
 cat kle-raw | python plategen.py > plate.dxf
 ```
+To use the CLI tool, requirements from requirements.txt must be installed.
 
-Hosting:
-Simply run web.py with requirements installed.
+####Hosting:
+Simply run web.py with requirements from requirements-web.txt installed.
 
 ## Additional Options
 

@@ -454,9 +454,12 @@ class PlateGenerator(object):
 		elif (self.cutout_type == "alps"):
 			self.cutout_width = Decimal('15.50');
 			self.cutout_height = Decimal('12.80');
+		elif (self.cutout_type == "omron"):
+			self.cutout_width = Decimal('13.50');
+			self.cutout_height = Decimal('13.50');
 		else:
 			print("Unsupported cutout type.", file=sys.stderr)
-			print("Supported: mx, alps", file=sys.stderr)
+			print("Supported: mx, alps, omron", file=sys.stderr)
 			#exit(1)
 			return 3
 		
@@ -697,7 +700,7 @@ if __name__ == "__main__":
 	
 	# Note: The args will be fed into Decimal(), which takes strings
 	
-	parser.add_argument("-ct", "--cutout-type", help="Switch cutout type. Supported: mx, alps; Default: mx", type=str, default='mx')
+	parser.add_argument("-ct", "--cutout-type", help="Switch cutout type. Supported: mx, alps, omron; Default: mx", type=str, default='mx')
 	parser.add_argument("-cr", "--cutout-radius", help="Switch cutout fillet radius. Default: 0.5", type=str, default='0.5')
 	parser.add_argument("-st", "--stab-type", help="Stabilizer type. Supported: mx-simple, large-cuts, alps-aek, alps-at101; Default: mx-simple", type=str, default='mx-simple')
 	parser.add_argument("-sr", "--stab-radius", help="Stabilizer cutout fillet radius. Default: 0.5", type=str, default='0.5')

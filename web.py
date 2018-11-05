@@ -33,10 +33,38 @@ def receive_data():
 	
 	output_data = io.StringIO()
 	
-	gen = plategen.PlateGenerator(cutout_type, cutout_radius, stab_type, stab_radius, acoustic_type, acoustic_radius, 
-	unit_width, unit_height, False)
+	try:
+		gen = plategen.PlateGenerator(cutout_type, cutout_radius, stab_type, stab_radius, acoustic_type, acoustic_radius, 
+		unit_width, unit_height, False)
+	except(ValueError):
+		flash("Enter valid integer arguments.")
+		return render_template('base.html')
 	
-	gen.generate_plate(output_data, kle_input)
+	out_code = gen.generate_plate(output_data, kle_input)
+	if (out_code == 1):
+		flash("Invalid KLE data.")
+		return render_template('base.html')
+	elif (out_code == 2):
+		flash("Unsupported stabilizer cutout type.")
+		return render_template('base.html')
+	elif (out_code == 3):
+		flash("Unsupported switch cutout type.")
+		return render_template('base.html')
+	elif (out_code == 4):
+		flash("Switch fillet radius must be between 0 and half the cutout width/height.")
+		return render_template('base.html')
+	elif (out_code == 5):
+		flash("Unit size must be between 0 and 1000mm.")
+		return render_template('base.html')
+	elif (out_code == 6):
+		flash("Stablizer fillet radius must be between 0 and 5.")
+		return render_template('base.html')
+	elif (out_code == 7):
+		flash("Acoustic cutout fillet radius must be between 0 and 5.")
+		return render_template('base.html')
+	elif (out_code != 0):
+		flash("Unspecified error.")
+		return render_template('base.html')
 	
 	# Convert StringIO to BytesIO
 	output_file = io.BytesIO()
@@ -50,7 +78,7 @@ def receive_data():
 		as_attachment=True,
         attachment_filename='plate.dxf',
 		mimetype='application/dxf'
-   )
+	)
  
 if (__name__ == "__main__"):
-    app.run(debug=True)
+    app.run()

@@ -47,13 +47,19 @@ class PlateGenerator(object):
 		self.cutout_type = arg_ct
 
 		# Cutout radius: The fillet radius ( 0 <= x <= 1/2 cutout width or height )
-		self.cutout_radius = Decimal(arg_cr)
+		try:
+			self.cutout_radius = Decimal(arg_cr)
+		except:
+			raise ValueError
 
 		# Stab type: mx-simple, large-cuts, alps-aek, alps-at101
 		self.stab_type = arg_st
 
 		# Stab radius: The fillet radius for stab cutouts ( 0 <= x <= 1 )
-		self.stab_radius = Decimal(arg_sr)
+		try:
+			self.stab_radius = Decimal(arg_sr)
+		except:
+			raise ValueError
 
 		# Acoustic cuts: The cutouts typically found on high end plates beside the switches.
 		# This script only handles the thin short cuts vertically beside each switch cut, not the large ones, i.e. between fn row and alphas.
@@ -61,12 +67,21 @@ class PlateGenerator(object):
 		self.acoustics_type = arg_at
 
 		# Acoustic radius: Fillet radius for cuts mentioned above.
-		self.acoustics_radius = arg_ar
-
+		try:
+			self.acoustics_radius = Decimal(arg_ar)
+		except:
+			raise ValueError
 
 		# Unit size (i.e. 1U = 19.05mm). ( 0 <= x <= inf, cap at 1000 for now )
-		self.unit_width = Decimal(arg_uw)
-		self.unit_height = Decimal(arg_uh)
+		try:
+			self.unit_width = Decimal(arg_uw)
+		except:
+			raise ValueError
+		try:
+			self.unit_height = Decimal(arg_uh)
+		except:
+			raise ValueError
+		
 
 		#== Debug parameters ==#
 
@@ -234,7 +249,8 @@ class PlateGenerator(object):
 		else:
 			print("Unsupported stab type.", file=sys.stderr)
 			print("Stab types: mx-simple, large-cuts, alps-aek, alps-at101", file=sys.stderr)
-			exit(1)
+			#exit(1)
+			return(2)
 			
 		for line in line_segments:
 			self.draw_rotated_line(x + Decimal(str(line[0])), y + Decimal(str(line[1])), x + Decimal(str(line[2])), y + Decimal(str(line[3])), anchor_x, anchor_y, angle)
@@ -432,28 +448,43 @@ class PlateGenerator(object):
 		else:
 			print("Unsupported cutout type.", file=sys.stderr)
 			print("Supported: mx, alps", file=sys.stderr)
-			exit(1)
+			#exit(1)
+			return 3
 		
 		# Check if values legal
 
 		# Cutout radius: The fillet radius ( 0 <= x <= 1/2 width or height)
-		if (self.cutout_radius < 0 or self.cutout_radius > (self.cutout_width/2) or self.cutout_radius > (self.cutout_height/2)) :
+		if ((self.cutout_radius < 0) or (self.cutout_radius > (self.cutout_width/2)) or (self.cutout_radius > (self.cutout_height/2))) :
 			print("Radius must be between 0 and half the cutout width/height.", file=sys.stderr)
-			exit(1)
+			#exit(1)
+			return 4
 
 		# Unit size ( 0 <= x <= inf, cap at 1000 for now )
 		if (self.unit_width < 0 or self.unit_width > 1000):
 			print("Unit size must be between 0 and 1000", file=sys.stderr)
-			exit(1)
+			#exit(1)
+			return 5
+			
 		if (self.unit_height < 0 or self.unit_height > 1000):
 			print("Unit size must be between 0 and 1000", file=sys.stderr)
-			exit(1)
-
+			#exit(1)
+			return 5
+			
+		if (self.stab_radius < 0 or self.stab_radius > 5):
+			return 6
+		if (self.acoustics_radius < 0 or self.acoustics_radius > 5):
+			return 7
+		
+			
+		return 0
+			
 	def generate_plate(self, file, input_data=None):
 
 		# Init vars
-		self.initialize_variables()
-
+		init_code = self.initialize_variables()
+		if (init_code != 0):
+			return init_code
+		
 		# If debug matrix is on, make sth generic
 		if not input_data:
 			input_data = self.debug_matrix_data
@@ -471,7 +502,12 @@ class PlateGenerator(object):
 
 		# Parse KLE data
 		all_switches = []
-		json_data = json5.loads('[' + input_data + ']')
+		
+		try:
+			json_data = json5.loads('[' + input_data + ']')
+		except(ValueError):
+			#print("Invalid KLE data", file=sys.stderr)
+			return(1)
 
 		for row in json_data:
 			if (self.debug_log):
@@ -638,10 +674,12 @@ class PlateGenerator(object):
 		if (self.debug_log):
 			print("Complete! Saving plate to specified output")
 
-		#if (file == "stdout"):
-		#	self.plate.write(sys.stdout)
-		#else:
-		self.plate.write(file)
+		if (file == "stdout"):
+			self.plate.write(sys.stdout)
+		else:
+			self.plate.write(file)
+		return 0
+			
 		
 			
 if __name__ == "__main__":
@@ -664,8 +702,8 @@ if __name__ == "__main__":
 	
 	args = parser.parse_args()
 	
-	gen = PlateGenerator(args.cutout_type, args.cutout_radius, args.stab_type, args.stab_radius, args.acoustics_type, args.acoustics_radius, args.unit_width, args.unit_height, 
-	"stdout", "", args.debug_log)
+	gen = PlateGenerator(args.cutout_type, args.cutout_radius, args.stab_type, args.stab_radius, args.acoustics_type, args.acoustics_radius, 
+	args.unit_width, args.unit_height, args.debug_log)
 	
 	input_data = sys.stdin.read()
 	gen.generate_plate("stdout", input_data)

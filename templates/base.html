@@ -59,20 +59,11 @@
 			
 			{% with messages = get_flashed_messages(with_categories=true) %}
 				{% if messages %}
-	 
-			{% for message in messages %}
-				{% if "Error" not in message[1]: %}
-					<div class="alert alert-info">
-					<strong>Success! </strong> {{ message[1] }}
-					</div>
-				{% endif %}
-	 
-				{% if "Error" in message[1]: %}
-					<div class="alert alert-warning">
-					{{ message[1] }}
-					</div>
-				{% endif %}
-			{% endfor %}
+					{% for message in messages %}
+							<div class="alert alert-warning">
+								<p><strong>Error: </strong>{{ message[1] }}</p>
+							</div>
+					{% endfor %}
 				{% endif %}
 			{% endwith %}
 			
@@ -154,11 +145,11 @@
 					<p>Best leave these alone unless you know what you are doing.</p>
 					<div class="form-group" style="margin: auto; margin-top: 30px;">
 					  <label for="unit-width">Horizontal Key Spacing</label>
-					  <input style="width: 80%; margin: auto;" type="text" class="form-control" id="unit-width" name="unit-width" value="19.05" placeholder="Unit Width, mm" required></input>
+					  <input min="0" max="1000" style="width: 80%; margin: auto;" type="text" class="form-control" id="unit-width" name="unit-width" value="19.05" placeholder="Unit Width, mm" required></input>
 					</div>
 					<div class="form-group" style="margin: auto; margin-top: 30px;">
 					  <label for="unit-height">Vertical Key Spacing</label>
-					  <input style="width: 80%; margin: auto;" type="text" class="form-control" id="unit-height" name="unit-height" value="19.05" placeholder="Unit Width, mm" required></input>
+					  <input min="0" max="1000" style="width: 80%; margin: auto;" type="text" class="form-control" id="unit-height" name="unit-height" value="19.05" placeholder="Unit Width, mm" required></input>
 					</div>
 				</div>
 			</div>

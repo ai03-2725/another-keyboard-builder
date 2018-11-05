@@ -283,6 +283,13 @@ class PlateGenerator(object):
 			elif (unitwidth >= 2): 
 				self.make_stab_cutout(center_x + Decimal('11.938'), center_y, center_x, center_y, angle)
 				self.make_stab_cutout(center_x - Decimal('11.938'), center_y, center_x, center_y, angle)
+				if (self.acoustics_type == "extreme"):
+					make_acoustic_cutout(center_x + Decimal('18.25'), center_y)
+					make_acoustic_cutout(center_x - Decimal('18.25'), center_y)
+			elif (unitwidth >= 1.5):
+				if (self.acoustics_type == "typical" or (self.acoustics_type == "extreme")):
+					make_acoustic_cutout(center_x + Decimal('11.6'), center_y)
+					make_acoustic_cutout(center_x - Decimal('11.6'), center_y)
 		elif (self.stab_type == "alps-aek"):
 			# These are mostly based on measurements. 
 			# If someone has datasheets, please let me know

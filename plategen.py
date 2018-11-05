@@ -352,29 +352,31 @@ class PlateGenerator(object):
 		
 
 	# Draw switch cutout
-	def draw_switch_cutout(self, mm_center_x, mm_center_y, angle):
+	def draw_switch_cutout(self, x, y, angle):
 	
-		# Make some variables for the sake of legibility
-		mm_y_top = mm_center_y + (self.cutout_height / Decimal('2'));
-		mm_y_bottom = mm_center_y - (self.cutout_height / Decimal('2'));
-		mm_x_left = mm_center_x - (self.cutout_width / Decimal('2'));
-		mm_x_right = mm_center_x + (self.cutout_width / Decimal('2'));
+		line_segments = []
+		corners = []
 		
-		# First draw the line segments: top, bottom, left, right
-		self.draw_rotated_line(mm_x_left + self.cutout_radius, mm_y_top, mm_x_right - self.cutout_radius, mm_y_top, 
-		mm_center_x, mm_center_y, angle)
-		self.draw_rotated_line(mm_x_left + self.cutout_radius, mm_y_bottom, mm_x_right - self.cutout_radius, mm_y_bottom, 
-		mm_center_x, mm_center_y, angle)
-		self.draw_rotated_line(mm_x_left, mm_y_top - self.cutout_radius, mm_x_left, mm_y_bottom + self.cutout_radius, 
-		mm_center_x, mm_center_y, angle)
-		self.draw_rotated_line(mm_x_right, mm_y_top - self.cutout_radius, mm_x_right, mm_y_bottom + self.cutout_radius, 
-		mm_center_x, mm_center_y, angle)
-		
-		# Now render corner arcs: top left, top right, bottom left, bottom right
-		self.draw_rotated_arc(mm_x_left + self.cutout_radius, mm_y_top - self.cutout_radius, mm_center_x, mm_center_y, self.cutout_radius, Decimal('90'), Decimal('180'), angle)
-		self.draw_rotated_arc(mm_x_right - self.cutout_radius, mm_y_top - self.cutout_radius, mm_center_x, mm_center_y, self.cutout_radius, Decimal('0'), Decimal('90'), angle)
-		self.draw_rotated_arc(mm_x_left + self.cutout_radius, mm_y_bottom + self.cutout_radius, mm_center_x, mm_center_y, self.cutout_radius, Decimal('180'), Decimal('270'), angle)
-		self.draw_rotated_arc(mm_x_right - self.cutout_radius, mm_y_bottom + self.cutout_radius, mm_center_x, mm_center_y, self.cutout_radius, Decimal('270'), Decimal('360'), angle)
+		anchor_x = x;
+		anchor_y = y;
+	
+		if (self.cutout_type == "mx" or self.cutout_type == "alps" or self.cutout_type == "omron"):
+			
+			line_segments.append(((self.cutout_width / -Decimal('2')) + self.cutout_radius, (self.cutout_height / Decimal('2')), (self.cutout_width / Decimal('2')) - self.cutout_radius, (self.cutout_height / Decimal('2'))))
+			line_segments.append(((self.cutout_width / -Decimal('2')) + self.cutout_radius, (self.cutout_height / -Decimal('2')), (self.cutout_width / Decimal('2')) - self.cutout_radius, (self.cutout_height / -Decimal('2'))))
+			line_segments.append(((self.cutout_width / -Decimal('2')), (self.cutout_height / Decimal('2')) - self.cutout_radius, (self.cutout_width / -Decimal('2')), (self.cutout_height / -Decimal('2')) + self.cutout_radius))
+			line_segments.append(((self.cutout_width / Decimal('2')), (self.cutout_height / Decimal('2')) - self.cutout_radius, (self.cutout_width / Decimal('2')), (self.cutout_height / -Decimal('2')) + self.cutout_radius))
+			
+			corners.append(((self.cutout_width / -Decimal('2')) + self.cutout_radius, (self.cutout_height / Decimal('2')) - self.cutout_radius, 90, 180))
+			corners.append(((self.cutout_width / Decimal('2')) - self.cutout_radius, (self.cutout_height / Decimal('2')) - self.cutout_radius, 0, 90))
+			corners.append(((self.cutout_width / -Decimal('2')) + self.cutout_radius, (self.cutout_height / -Decimal('2')) + self.cutout_radius, 180, 270))
+			corners.append(((self.cutout_width / Decimal('2')) - self.cutout_radius, (self.cutout_height / -Decimal('2')) + self.cutout_radius, 270, 360))
+			
+			for line in line_segments:
+				self.draw_rotated_line(x + Decimal(str(line[0])), y + Decimal(str(line[1])), x + Decimal(str(line[2])), y + Decimal(str(line[3])), anchor_x, anchor_y, angle)
+				
+			for arc in corners:
+				self.draw_rotated_arc(x + Decimal(str(arc[0])), y + Decimal(str(arc[1])), anchor_x, anchor_y, self.stab_radius, arc[2], arc[3], angle)
 		
 		
 	# Use the functions above to render an entire switch - Cutout, stabs, and all

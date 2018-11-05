@@ -80,8 +80,7 @@
 
 		<div class="row text-center" style="width: 90%; max-width: 1024px; margin: auto; margin-top: 15px">
 		
-		  <form  action="" method="post" role="form">
-			{{ form.csrf }}
+		  <form id="plateDataForm" action="/plategen" method="post" role="form">
 
 			<div class="form-group" style="margin: auto;">
 				<h3 for="kle-data">KLE Raw Data</h3>
@@ -277,4 +276,23 @@
 	</div>
 	
   <body>
+  
+  <script>
+    $(document).ready(function(){
+        $("#plateDataForm").click(function(e)
+        {
+            var MyForm = JSON.stringify($("#kle-data").serializeJSON());
+            console.log(MyForm);
+            $.ajax({
+                url : "http://localhost:5000/generateplate",
+                type: "POST",
+                data : MyForm,
+
+            });
+            e.preventDefault(); //STOP default action
+
+        });
+    });
+    </script>
+  
 </html>

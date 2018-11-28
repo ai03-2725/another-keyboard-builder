@@ -378,6 +378,9 @@ class PlateGenerator(object):
 			for arc in corners:
 				self.draw_rotated_arc(x + Decimal(str(arc[0])), y + Decimal(str(arc[1])), anchor_x, anchor_y, self.stab_radius, arc[2], arc[3], angle)
 		
+		# TODO: Add switchtop removal cutouts, hardcoded radius to 0.5
+		#elif (self.cutout_type == "mx-topremoval-simple"):
+		#	line_segments.append((-Decimal('7.80') + self.cutout_radius, -Decimal('7')), (Decimal('7.80') - self.cutout_radius, -Decimal('7')))
 		
 	# Use the functions above to render an entire switch - Cutout, stabs, and all
 	def render_switch(self, switch):

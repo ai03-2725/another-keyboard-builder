@@ -281,7 +281,7 @@ class PlateGenerator(object):
 			self.draw_rotated_line(x + Decimal(str(line[0])), y + Decimal(str(line[1])), x + Decimal(str(line[2])), y + Decimal(str(line[3])), anchor_x, anchor_y, angle)
 			
 		for arc in corners:
-			self.draw_rotated_arc(x + Decimal(str(arc[0])), y + Decimal(str(arc[1])), anchor_x, anchor_y, self.stab_radius, arc[2], arc[3], angle)
+			self.draw_rotated_arc(x + Decimal(str(arc[0])), y + Decimal(str(arc[1])), anchor_x, anchor_y, self.acoustics_radius, arc[2], arc[3], angle)
 		
 			
 	# Calls make stab cutout based on unit width and style
@@ -376,7 +376,7 @@ class PlateGenerator(object):
 				self.draw_rotated_line(x + Decimal(str(line[0])), y + Decimal(str(line[1])), x + Decimal(str(line[2])), y + Decimal(str(line[3])), anchor_x, anchor_y, angle)
 				
 			for arc in corners:
-				self.draw_rotated_arc(x + Decimal(str(arc[0])), y + Decimal(str(arc[1])), anchor_x, anchor_y, self.stab_radius, arc[2], arc[3], angle)
+				self.draw_rotated_arc(x + Decimal(str(arc[0])), y + Decimal(str(arc[1])), anchor_x, anchor_y, self.cutout_radius, arc[2], arc[3], angle)
 		
 		# TODO: Add switchtop removal cutouts, hardcoded radius to 0.5
 		#elif (self.cutout_type == "mx-topremoval-simple"):

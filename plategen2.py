@@ -1,11 +1,12 @@
 #=================================#
-#        Plate Generator          #
+#        Plate Generator 2        #
 #=================================#
 
 # By ai03
 # Credits to
 # Amtra5, Mxblue, Bakingpy,
-# Senter, Pwner, Kevinplus, Deskthority Wiki,
+# Senter, Pwner, Kevinplus, 
+# Peioris, Deskthority Wiki,
 # and any others I may have missed
 
 # Automated production of high-end mechanical keyboard plate data
@@ -85,26 +86,12 @@ class PlateGenerator(object):
 
 		#== Debug parameters ==#
 
-		# Tell user everything about what's going on and spam the console?
+		# The debug_log flag makes the script spit out debug info and NOT write out the plate file. 
 		self.debug_log = arg_db
 
-		# Runtime vars that are often systematically changed or reset
-
-		# Current x/y coordinates
-		self.current_x = Decimal('0')
-		self.current_y = Decimal('0')
-		self.max_width = Decimal('0')
-		self.max_height = Decimal('0')
-
-		# Cutout sizes
-		self.cutout_width = Decimal('0')
-		self.cutout_height = Decimal('0')
-
-		# Used for parsing
-		self.reset_key_parameters()
-		self.current_rotx = "NOT SET"
-		self.current_roty = "NOT SET"
-		self.current_angle = "NOT SET"
+		# Other variables
+		self.cutout_width = Decimal("0");
+		self.cutout_height = Decimal("0");
 		
 	#=================================#
 	#            Classes              #
@@ -114,20 +101,71 @@ class PlateGenerator(object):
 		
 		def __init__(self, x_var, y_var):
 			# These fields correspond to the respective kle data
-			self.x = x_var
-			self.y = y_var
-			self.width = 1
-			self.height = 1
-			self.width_secondary = 1
-			self.height_secondary = 1
-			self.rotx = 0
-			self.roty = 0
-			self.angle = 0
-			self.cutout_angle = 0
-			self.stab_angle = 0
-			self.offset_x = 0
-			self.offset_y = 0
+			self.pos_x = x_var	# Implied coord X (Does not have a field in KLE)
+			self.pos_y = y_var	# Implied coord Y (Does not have a field in KLE)
+			self.w = 1		# Width
+			self.h = 1		# Height
+			self.w2 = 1		# Width2: For oddly sized keys such as ISO, stepped
+			self.h2 = 1		# Height2: For oddly sized keys such as ISO, stepped
+			self.rx = 0		# RotationX: Rotation anchor
+			self.ry = 0		# RotationY: Rotation anchor
+			self.r = 0		# Rotation: Angle
+			self.x = 0		# x: X offset from either previous key or anchor
+			self.y = 0		# y: Y offset from either previous key or anchor
 		
+			self.cutout_angle = 0	# Custom field for switch-independent cutout rotation
+			self.stab_angle = 0		# Custom field for switch-independent stabilizer rotation
+			
+		def calculate_center_coords(self):
+			
+	
+	#=================================#
+	#           DXF Blocks            #
+	#=================================#
+	
+	# These basically act as stamps.
+	# Saves from having to write each and every entity individually, as was done before.
+	
+	def build_blocks(self):
+		
+		# Switch cutout
+		block_switch_cutout = self.plate.blocks.new(name='SWITCH_CUTOUT')
+		switch_half_width = self.cutout_width / 2
+		switch_half_height = self.cutout_height / 2
+		block_switch_cutout.add_line((-switch_half_width + self.cutout_radius, -switch_half_height), (switch_half_width - self.cutout_radius, -switch_half_height)) # Top
+		block_switch_cutout.add_line((-switch_half_width + self.cutout_radius, switch_half_height), (switch_half_width - self.cutout_radius, switch_half_height)) # Bottom
+		block_switch_cutout.add_line((-switch_half_width, -switch_half_height + self.cutout_radius), (-switch_half_width, switch_half_height - self.cutout_radius)) # Left
+		block_switch_cutout.add_line((switch_half_width, -switch_half_height + self.cutout_radius), (switch_half_width, switch_half_height - self.cutout_radius)) # Right
+		block_switch_cutout.add_arc((switch_half_width - self.cutout_radius, -switch_half_height + self.cutout_radius), self.cutout_radius, 0, 90) # Top right
+		block_switch_cutout.add_arc((-switch_half_width + self.cutout_radius, -switch_half_height + self.cutout_radius), self.cutout_radius, 90, 180) # Top left
+		block_switch_cutout.add_arc((-switch_half_width + self.cutout_radius, switch_half_height - self.cutout_radius), self.cutout_radius, 180, 270) # Bottom left
+		block_switch_cutout.add_arc((switch_half_width - self.cutout_radius, switch_half_height - self.cutout_radius), self.cutout_radius, 270, 360) # Bottom right
+		
+		# Stab cutout for mx-simple 
+		# Fairly tight rectangles with width based on official spec
+		stab_mx_simple_cutout = self.plate.blocks.new(name='STAB_MX_SIMPLE_CUTOUT')
+		stab_mx_simple_cutout.add_line((Decimal('-3.375') + self.stab_radius, Decimal('6')), (Decimal('3.375') - self.stab_radius, Decimal('6')))
+		stab_mx_simple_cutout.add_line((Decimal('-3.375') + self.stab_radius, Decimal('-8')), (Decimal('3.375') - self.stab_radius, Decimal('-8')))
+		stab_mx_simple_cutout.add_line((Decimal('-3.375'), Decimal('6') - self.stab_radius), (Decimal('-3.375'), Decimal('-8') + self.stab_radius))
+		stab_mx_simple_cutout.add_line((Decimal('3.375'), Decimal('6') - self.stab_radius), (Decimal('3.375'), Decimal('-8') + self.stab_radius))
+		stab_mx_simple_cutout.add_arc((Decimal('-3.375') + self.stab_radius, Decimal('6') - self.stab_radius), self.stab_radius, 90, 180)
+		stab_mx_simple_cutout.add_arc((Decimal('3.375') - self.stab_radius, Decimal('6') - self.stab_radius), self.stab_radius, 0, 90)
+		stab_mx_simple_cutout.add_arc((Decimal('-3.375') + self.stab_radius, Decimal('-8') + self.stab_radius), self.stab_radius, 180, 270)
+		stab_mx_simple_cutout.add_arc((Decimal('3.375') - self.stab_radius, Decimal('-8') + self.stab_radius), self.stab_radius, 270, 360)
+		
+		# Stab cutout for large-cuts
+		# Large, spacious 15x7 cutouts, the recommended standard
+		stab_large_cuts_cutout = self.plate.blocks.new(name='STAB_LARGE_CUTS_CUTOUT')
+		stab_large_cuts_cutout.add_line((Decimal('-3.5') + self.stab_radius, Decimal('6')), (Decimal('3.5') - self.stab_radius, Decimal('6')))
+		stab_large_cuts_cutout.add_line((Decimal('-3.5') + self.stab_radius, Decimal('-9')), (Decimal('3.5') - self.stab_radius, Decimal('-9')))
+		stab_large_cuts_cutout.add_line((Decimal('-3.5'), Decimal('6') - self.stab_radius), (Decimal('-3.5'), Decimal('-9') + self.stab_radius))
+		stab_large_cuts_cutout.add_line((Decimal('3.5'), Decimal('6') - self.stab_radius), (Decimal('3.5'), Decimal('-9') + self.stab_radius))
+		stab_large_cuts_cutout.add_arc((Decimal('-3.5') + self.stab_radius, Decimal('6') - self.stab_radius), self.stab_radius, 90, 180)
+		stab_large_cuts_cutout.add_arc((Decimal('3.5') - self.stab_radius, Decimal('6') - self.stab_radius), self.stab_radius, 0, 90)
+		stab_large_cuts_cutout.add_arc((Decimal('-3.5') + self.stab_radius, Decimal('-9') + self.stab_radius), self.stab_radius, 180, 270)
+		stab_large_cuts_cutout.add_arc((Decimal('3.5') - self.stab_radius, Decimal('-9') + self.stab_radius), self.stab_radius, 270, 360)
+		 
+	
 	#=================================#
 	#           Functions             #
 	#=================================#
@@ -141,19 +179,6 @@ class PlateGenerator(object):
 		except ValueError:
 			return_value = False
 		return return_value
-				
-	# Reset key default parameters
-	def reset_key_parameters(self):
-		
-		self.current_width = Decimal('1')
-		self.current_height = Decimal('1')
-		self.current_width_secondary = Decimal('1')
-		self.current_height_secondary = Decimal('1')
-		self.current_stab_angle = Decimal('0')
-		self.current_cutout_angle = Decimal('0')
-		self.current_offset_x = Decimal('0')
-		self.current_offset_y = Decimal('0')
-		self.current_deco = False
 				
 	# Modifies a point with rotation
 	def rotate_point_around_anchor(self, x, y, anchor_x, anchor_y, angle):
@@ -501,10 +526,6 @@ class PlateGenerator(object):
 		init_code = self.initialize_variables()
 		if (init_code != 0):
 			return init_code
-		
-		# If debug matrix is on, make sth generic
-		if not input_data:
-			input_data = self.debug_matrix_data
 			
 		# Sanitize by removing \" (KLE's literal " for a label)
 		#input_data = input_data.replace('\n', '')
@@ -553,80 +574,7 @@ class PlateGenerator(object):
 					# First, we simply make the switch
 					current_switch = self.Switch(self.current_x, self.current_y)
 					
-					# For x and y offset, check if any rotation spec is set, OR if previous switch had rotation syntax bound:
-					if (rotate_zone or self.current_rotx != "NOT SET" or self.current_roty != "NOT SET" or self.current_angle != "NOT SET"):
-					
-						# Syntax changes significantly once in rotation zone.
-						if (!rotate_zone):
-							rotate_zone = True
-							# First time, init the rotation variables
-							if (self.current_rotx == "NOT SET"):
-								self.current_rotx = Decimal("0")
-							if (self.current_roty == "NOT SET"):
-								self.current_roty = Decimal("0")
-							if (self.current_angle == "NOT SET"):
-								self.current_angle = Decimal("0")
-							
-					
-						# KLE syntax aids
-						# Reuses same name fields for different purposes
-						# Completely differing behavior compared to regular section for field reset per switch
-					
-						# Offset is used based on anchor point 
-						current_switch.offset_x = self.current_offset_x
-						current_switch.offset_y = self.current_offset_y
-						
-						# Carry over previous KLE fields for rotation
-						current_switch.rotx = self.current_rotx
-						current_switch.roty = self.current_roty
-						current_switch.angle = self.current_angle
-						
-						# Check and see if it's a y record
-						if (self.max_height > -self.current_roty - self.current_offset_y):
-							self.max_height = -self.current_roty - self.current_offset_y
-						
-					else:
-						# Otherwise, append as normal since not in rotated syntax yet
-						self.current_x += self.current_offset_x
-						self.current_y -= self.current_offset_y
-						current_switch.x += self.current_offset_x
-						current_switch.y -= self.current_offset_y
-						self.current_offset_x = Decimal('0')
-						self.current_offset_y = Decimal('0')
-						
-						current_switch.rotx = Decimal('0')
-						current_switch.roty = Decimal('0')
-						current_switch.angle = Decimal('0')
-						
-						# Check and see if it's a y record
-						if (self.max_height > self.current_y - self.current_height):
-							self.max_height = self.current_y - self.current_height
-					
-					# Then, adjust the x coord for next switch
-					self.current_x += self.current_width
-					# If this is a x record, update properly
-					if (self.max_width < self.current_x):
-						self.max_width = self.current_x
-					
-					
-					# And we adjust the fields as necessary.
-					# These default to 1 unless edited by a data field preceding
-					current_switch.width = self.current_width
-					current_switch.height = self.current_height
-					current_switch.width_secondary = self.current_width_secondary
-					current_switch.height_secondary = self.current_height_secondary
-					current_switch.stab_angle = self.current_stab_angle
-					current_switch.cutout_angle = self.current_cutout_angle
-					
-					# Deal with some certain cases
-					
-					# For example, vertical keys created by stretching height to be larger than width
-					# The key's cutout angle and stab angle should be offset by 90 degrees to compensate.
-					# This effectively transforms the key to a vertical
-					# This also handles ISO
-					if (self.current_width < self.current_height and self.current_height >= 1.75):
-						current_switch.cutout_angle -= Decimal('90')
-						current_switch.stab_angle -= Decimal('90')
+					# TODO: Write the key creation code
 					
 					all_switches.append(current_switch)
 					

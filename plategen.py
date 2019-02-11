@@ -102,9 +102,9 @@ class PlateGenerator(object):
 
 		# Used for parsing
 		self.reset_key_parameters()
-		self.current_rotx = Decimal('0')
-		self.current_roty = Decimal('0')
-		self.current_angle = Decimal('0')
+		self.current_rotx = "NONE"
+		self.current_roty = "NONE"
+		self.current_angle = "NONE"
 		
 	#=================================#
 	#            Classes              #
@@ -154,6 +154,20 @@ class PlateGenerator(object):
 		self.current_offset_x = Decimal('0')
 		self.current_offset_y = Decimal('0')
 		self.current_deco = False
+		
+	# Reset key default parameters for rotated zone
+	def reset_rotated_key_parameters(self):
+		
+		self.current_width = Decimal('1')
+		self.current_height = Decimal('1')
+		self.current_width_secondary = Decimal('1')
+		self.current_height_secondary = Decimal('1')
+		self.current_stab_angle = Decimal('0')
+		self.current_cutout_angle = Decimal('0')
+		self.current_deco = False
+		self.current_rotx = "UNCHANGED"
+		self.current_roty = "UNCHANGED"
+		self.current_angle = "UNCHANGED"
 				
 	# Modifies a point with rotation
 	def rotate_point_around_anchor(self, x, y, anchor_x, anchor_y, angle):
@@ -388,8 +402,16 @@ class PlateGenerator(object):
 		mm_x = Decimal('0')
 		mm_y = Decimal('0')
 		
+		if(self.debug_log):
+			print("RX: " + str(switch.rotx))
+			print("RY: " + str(switch.roty))
+			print("Angle: " + str(switch.angle))
+			print("Offset X: " + str(switch.offset_x))
+			print("Offset Y: " + str(switch.offset_y))
+			print("===")
+			
 		# Coord differs for regular vs rotated
-		if (switch.rotx != 0 or switch.roty != 0 or switch.angle != 0):
+		if ((switch.rotx != "NONE") and (switch.roty != "NONE") or switch.angle != "NONE"):
 			# rotx and roty are the raw base coords for anchor
 			# Then, upper left is offset from there
 			mm_x = (switch.rotx + switch.offset_x) * self.unit_width
@@ -402,6 +424,7 @@ class PlateGenerator(object):
 			# Otherwise, derive mm based on x and y in units
 			mm_x = switch.x * self.unit_width
 			mm_y = switch.y * self.unit_height
+			switch.angle = Decimal("0")
 			
 		# Then, derive the center of the switch based on width and height
 		mm_center_x = mm_x + ((switch.width / Decimal('2')) * self.unit_width)
@@ -519,6 +542,7 @@ class PlateGenerator(object):
 
 		# Parse KLE data
 		all_switches = []
+		rotation_zone = False
 		
 		try:
 			json_data = json5.loads('[' + input_data + ']')
@@ -551,17 +575,84 @@ class PlateGenerator(object):
 					current_switch = self.Switch(self.current_x, self.current_y)
 					
 					# For x and y offset, check if any rotation spec is set.
-					if (self.current_rotx != 0 or self.current_roty != 0 or self.current_angle != 0):
+					if (rotation_zone or self.current_rotx != "NONE" or self.current_roty != "NONE" or self.current_angle != "NONE"):
+					
+						if (not rotation_zone):
+							# If first time entering rotated syntax, init values for rotation vars
+							if (self.current_rotx == "NONE"):
+								self.current_rotx = Decimal("0")
+							if (self.current_roty == "NONE"):
+								self.current_roty = Decimal("0")
+							if (self.current_angle == "NONE"):
+								self.current_angle = Decimal("0")
+							rotation_zone = True
 					
 						# This means we RETAIN rx or ry from previous. How awful of a syntax. Seriously KLE?
+						
+						# Credits to Peioris to reverse engineering the syntax:
+						
+							# when parsing properties, you have to check the r, rx, ry values wrt to the previous values
+
+							# did rx and ry change? current_x = rx; current_y = ry 
+							# did rx change but not ry? current_x = rx; current_y = 0
+							# did r change but rx, ry did not? current_x = current_rx
+							
+							# It appears that in rotation syntax, the following terrible decisions are made:
+							
+							# - If a y: is present, it is added to whatever existing value is present (i.e. y:0.5 drops the key and any successors down 0.5U.) 
+							#   This effectively signifies the beginning of a row, since all successor keys will be placed with this y as a guideline.
+							# 	Also, a y: will reset the current x offset to 0.
+							# - If a x: is present without a y:, it is appended to the previous key's position (i.e. x:0.5 skips 0.5u before placing the next key in same rotated row
+							# - If a rx: or ry: is updated, all previous x: and y: references are ignored.
+							#   > If rx: is updated and ry is not given, ry = 0 by default.
+							#   > Similarly, if ry: is updated and rx is not given, rx = 0 by default.
+							# - If r: is updated, rx: and ry: are presumed 0; however, the previous x: is reset, y: offset value is not discarded (i.e. if y was at 5 before, it will be 6 now)
 					
-						# If set, store the value
-						current_switch.offset_x = self.current_offset_x
-						current_switch.offset_y = self.current_offset_y
+						# Check for rx or ry changes
+						if (self.current_rotx != "UNCHANGED"):
+							self.current_x = Decimal("0")
+							self.current_offset_y = Decimal("0")
+							
+							if (self.current_roty == "UNCHANGED"):
+								self.current_roty = Decimal("0")
+						else:
+							self.current_rotx = all_switches[-1].rotx
+								
+						if (self.current_roty != "UNCHANGED"):
+							self.current_x = Decimal("0")
+							self.current_offset_y = Decimal("0")
+							
+							if (self.current_rotx == "UNCHANGED"):
+								self.current_rotx = Decimal("0")
+						else:
+							self.current_roty = all_switches[-1].roty
+								
+						# Check for r changes
+						if (self.current_angle != "UNCHANGED"):
+							self.current_offset_y -= Decimal("1")
+							self.current_offset_x = Decimal("0")		
+						else:
+							self.current_angle = all_switches[-1].angle
+					
+						# - If a y: is present, reset x offset
+						if (self.current_offset_y != 0):
+							self.current_offset_x = Decimal("0")
+							self.current_offset_y -= self.current_offset_y
+							current_switch.offset_y -= self.current_offset_y
+						# Otherwise, obtain existing offset from previous switch
+						else:
+							current_switch.offset_x = all_switches[-1].offset_x + Decimal("1")
+							
+						# Append data for x offset for current switch
+						# self.current_offset_x += self.current_offset_x
+						current_switch.offset_x += self.current_offset_x
 						
 						# Check and see if it's a y record
 						if (self.max_height > -self.current_roty - self.current_offset_y):
 							self.max_height = -self.current_roty - self.current_offset_y
+							
+						# Then, adjust the x coord for next switch
+						self.current_offset_x += self.current_width
 						
 					else:
 						# Otherwise, append
@@ -576,24 +667,26 @@ class PlateGenerator(object):
 						if (self.max_height > self.current_y - self.current_height):
 							self.max_height = self.current_y - self.current_height
 					
-					# Then, adjust the x coord for next switch
-					self.current_x += self.current_width
+						# Then, adjust the x coord for next switch
+						self.current_x += self.current_width
+						
 					# If this is a x record, update properly
 					if (self.max_width < self.current_x):
 						self.max_width = self.current_x
 					
 					
 					# And we adjust the fields as necessary.
-					# These default to 1 unless edited by a data field preceding
+					# These default to 1, 0, etc unless edited by a data field preceding
 					current_switch.width = self.current_width
 					current_switch.height = self.current_height
 					current_switch.width_secondary = self.current_width_secondary
 					current_switch.height_secondary = self.current_height_secondary
+					current_switch.stab_angle = self.current_stab_angle
+					current_switch.cutout_angle = self.current_cutout_angle
 					current_switch.rotx = self.current_rotx
 					current_switch.roty = self.current_roty
 					current_switch.angle = self.current_angle
-					current_switch.stab_angle = self.current_stab_angle
-					current_switch.cutout_angle = self.current_cutout_angle
+					
 					
 					# Deal with some certain cases
 					
@@ -608,7 +701,10 @@ class PlateGenerator(object):
 					all_switches.append(current_switch)
 					
 					# Reset the fields to their defaults
-					self.reset_key_parameters()
+					if (rotation_zone):
+						self.reset_rotated_key_parameters()
+					else:
+						self.reset_key_parameters()
 					
 				# Otherwise, it's a data dictionary. We must parse it properly
 				else:
@@ -667,8 +763,12 @@ class PlateGenerator(object):
 							self.current_deco = True
 						
 			# Finished row
-			self.current_y -= Decimal('1')
-			self.current_x = Decimal('0')
+			if (rotation_zone):
+				self.current_offset_y -= Decimal("1")
+				self.current_offset_x = Decimal("0")
+			else:
+				self.current_y -= Decimal('1')
+				self.current_x = Decimal('0')
 			
 
 		# At this point, the keys are built.
@@ -689,7 +789,9 @@ class PlateGenerator(object):
 		self.modelspace.add_line((self.max_width, 0), (self.max_width, self.max_height))
 			
 		if (self.debug_log):
-			print("Complete! Saving plate to specified output")
+			print("Complete!")
+			return 0
+			
 
 		if (file == "stdout"):
 			self.plate.write(sys.stdout)

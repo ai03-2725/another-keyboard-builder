@@ -99,25 +99,37 @@ class PlateGenerator(object):
 
 	class Switch:
 		
-		def __init__(self, x_var, y_var):
+		def __init__(self):
 			# These fields correspond to the respective kle data
+			
+			# Universal fields
+			self.width = 1			# Width
+			self.height = 1			# Height
+			self.width2 = 1			# Width2: For oddly sized keys such as ISO, stepped
+			self.height2 = 1			# Height2: For oddly sized keys such as ISO, stepped
+			self.rotated_zone = False	# Rotation zone for rotation zone (coords handled differently)
+			
+			# Coord fields (in mm) generated based on variables
+			self.coord_x = 0;
+			self.coord_y = 0;
+			
+			# Notice about offset fields (x: and y: fields):
+			# They are calculated into the x/y_var or x_y_offset respectively during switch creation
+			
+			# Non-rotated fields
 			self.pos_x = x_var	# Implied coord X (Does not have a field in KLE)
 			self.pos_y = y_var	# Implied coord Y (Does not have a field in KLE)
-			self.w = 1		# Width
-			self.h = 1		# Height
-			self.w2 = 1		# Width2: For oddly sized keys such as ISO, stepped
-			self.h2 = 1		# Height2: For oddly sized keys such as ISO, stepped
-			self.rx = 0		# RotationX: Rotation anchor
-			self.ry = 0		# RotationY: Rotation anchor
-			self.r = 0		# Rotation: Angle
-			self.x = 0		# x: X offset from either previous key or anchor
-			self.y = 0		# y: Y offset from either previous key or anchor
+			
+			# Rotated fields
+			self.rot_anchor_x = 0		# RotationX: Rotation anchor
+			self.rot_anchor_y = 0		# RotationY: Rotation anchor
+			self.rot_angle = 0			# Rotation: Angle
+			self.rot_x_offset = 0		# x: X offset from anchor
+			self.rot_y_offset = 0		# y: Y offset from anchor
 		
+			# Custom fields unique to plategen
 			self.cutout_angle = 0	# Custom field for switch-independent cutout rotation
 			self.stab_angle = 0		# Custom field for switch-independent stabilizer rotation
-			
-		def calculate_center_coords(self):
-			
 	
 	#=================================#
 	#           DXF Blocks            #
@@ -164,7 +176,30 @@ class PlateGenerator(object):
 		stab_large_cuts_cutout.add_arc((Decimal('3.5') - self.stab_radius, Decimal('6') - self.stab_radius), self.stab_radius, 0, 90)
 		stab_large_cuts_cutout.add_arc((Decimal('-3.5') + self.stab_radius, Decimal('-9') + self.stab_radius), self.stab_radius, 180, 270)
 		stab_large_cuts_cutout.add_arc((Decimal('3.5') - self.stab_radius, Decimal('-9') + self.stab_radius), self.stab_radius, 270, 360)
-		 
+		
+		# Alps cutouts
+		# Rectangles 2.67 wide, 5.21 high.
+		stab_alps_cutout = self.plate.blocks.new(name='STAB_ALPS_CUTOUT')
+		stab_alps_cutout.add_line((Decimal('-1.335') + self.stab_radius, Decimal('-3.875')), (Decimal('1.335') - self.stab_radius, Decimal('-3.875')))
+		stab_alps_cutout.add_line((Decimal('-1.335') + self.stab_radius, Decimal('-9.085')), (Decimal('1.335') - self.stab_radius, Decimal('-9.085')))
+		stab_alps_cutout.add_line((Decimal('-1.335'), Decimal('-3.875') - self.stab_radius), (Decimal('-1.335'), Decimal('-9.085') + self.stab_radius))
+		stab_alps_cutout.add_line((Decimal('1.335'), Decimal('-3.875') - self.stab_radius), (Decimal('1.335'), Decimal('-9.085') + self.stab_radius))
+		stab_alps_cutout.add_arc((Decimal('-1.335') + self.stab_radius, Decimal('-3.875') - self.stab_radius), self.stab_radius, 90, 180)
+		stab_alps_cutout.add_arc((Decimal('1.335') - self.stab_radius, Decimal('-3.875') - self.stab_radius), self.stab_radius, 0, 90)
+		stab_alps_cutout.add_arc((Decimal('-1.335') + self.stab_radius, Decimal('-9.085') + self.stab_radius), self.stab_radius, 180, 270)
+		stab_alps_cutout.add_arc((Decimal('1.335') - self.stab_radius, Decimal('-9.085') + self.stab_radius), self.stab_radius, 270, 360)
+
+		# Acoustic cutouts
+		acoustic_cutout = self.plate.blocks.new(name='ACOUSTIC_CUTOUT')
+		acoustic_cutout.add_line((Decimal('-1') + self.acoustics_radius, (self.cutout_height / Decimal('2'))), (Decimal('1') - self.acoustics_radius, (self.cutout_height / Decimal('2'))))
+		acoustic_cutout.add_line((Decimal('-1') + self.acoustics_radius, (self.cutout_height / -Decimal('2'))), (Decimal('1') - self.acoustics_radius, (self.cutout_height / -Decimal('2'))))
+		acoustic_cutout.add_line((Decimal('-1'), (self.cutout_height / Decimal('2')) - self.acoustics_radius), (Decimal('-1'), (self.cutout_height / -Decimal('2')) + self.acoustics_radius))
+		acoustic_cutout.add_line((Decimal('1'), (self.cutout_height / Decimal('2')) - self.acoustics_radius), (Decimal('1'), (self.cutout_height / -Decimal('2')) + self.acoustics_radius))
+		acoustic_cutout.add_arc((Decimal('-1') + self.acoustics_radius, (self.cutout_height / Decimal('2')) - self.acoustics_radius), self.stab_radius, 90, 180)
+		acoustic_cutout.add_arc((Decimal('1') - self.acoustics_radius, (self.cutout_height / Decimal('2')) - self.acoustics_radius), self.stab_radius, 0, 90)
+		acoustic_cutout.add_arc((Decimal('-1') + self.acoustics_radius, (self.cutout_height / -Decimal('2')) + self.acoustics_radius), self.stab_radius, 180, 270)
+		acoustic_cutout.add_arc((Decimal('1') - self.acoustics_radius, (self.cutout_height / -Decimal('2')) + self.acoustics_radius), self.stab_radius, 270, 360)
+		
 	
 	#=================================#
 	#           Functions             #
@@ -204,18 +239,6 @@ class PlateGenerator(object):
 		
 		return (new_x, new_y)
 		
-	# Draw line segment rotated with respect to an anchor
-	def draw_rotated_line(self, x1, y1, x2, y2, anchor_x, anchor_y, angle):
-		coords_1 = self.rotate_point_around_anchor(x1, y1, anchor_x, anchor_y, angle)
-		coords_2 = self.rotate_point_around_anchor(x2, y2, anchor_x, anchor_y, angle)
-		
-		self.modelspace.add_line((coords_1[0], coords_1[1]), (coords_2[0], coords_2[1]))
-		
-	# Draw arc rotated with respect to an anchor
-	def draw_rotated_arc(self, x, y, anchor_x, anchor_y, radius, angle_start, angle_end, rotation):
-		coords = self.rotate_point_around_anchor(x, y, anchor_x, anchor_y, rotation)
-		self.modelspace.add_arc((coords[0], coords[1]), radius, float(angle_start + rotation), float(angle_end + rotation))
-		
 	# Stab cutout maker
 	# The x and y are center, like this:
 	#
@@ -226,87 +249,11 @@ class PlateGenerator(object):
 	# |_   _|
 	#   |_|
 
-	def make_stab_cutout(self, x, y, anchor_x, anchor_y, angle):
-
-		line_segments = []
-		corners = []
-		
-		if (self.stab_type == "mx-simple"):
-			# Rectangular simplified mx cutout.
-			# A bit larger than stock to account for fillets.
-			
-			line_segments.append((Decimal('-3.375') + self.stab_radius, Decimal('6'), Decimal('3.375') - self.stab_radius, Decimal('6')))
-			line_segments.append((Decimal('-3.375') + self.stab_radius, Decimal('-8'), Decimal('3.375') - self.stab_radius, Decimal('-8')))
-			line_segments.append((Decimal('-3.375'), Decimal('6') - self.stab_radius, Decimal('-3.375'), Decimal('-8') + self.stab_radius))
-			line_segments.append((Decimal('3.375'), Decimal('6') - self.stab_radius, Decimal('3.375'), Decimal('-8') + self.stab_radius))
-			
-			corners.append((Decimal('-3.375') + self.stab_radius, Decimal('6') - self.stab_radius, 90, 180))
-			corners.append((Decimal('3.375') - self.stab_radius, Decimal('6') - self.stab_radius, 0, 90))
-			corners.append((Decimal('-3.375') + self.stab_radius, Decimal('-8') + self.stab_radius, 180, 270))
-			corners.append((Decimal('3.375') - self.stab_radius, Decimal('-8') + self.stab_radius, 270, 360))
-			
-		elif (self.stab_type == "large-cuts"):
-			# Large, spacious 15x7 cutouts; 1mm from mx switch cutout top
-			
-			line_segments.append((Decimal('-3.5') + self.stab_radius, Decimal('6'), Decimal('3.5') - self.stab_radius, Decimal('6')))
-			line_segments.append((Decimal('-3.5') + self.stab_radius, Decimal('-9'), Decimal('3.5') - self.stab_radius, Decimal('-9')))
-			line_segments.append((Decimal('-3.5'), Decimal('6') - self.stab_radius, Decimal('-3.5'), Decimal('-9') + self.stab_radius))
-			line_segments.append((Decimal('3.5'), Decimal('6') - self.stab_radius, Decimal('3.5'), Decimal('-9') + self.stab_radius))
-			
-			corners.append((Decimal('-3.5') + self.stab_radius, Decimal('6') - self.stab_radius, 90, 180))
-			corners.append((Decimal('3.5') - self.stab_radius, Decimal('6') - self.stab_radius, 0, 90))
-			corners.append((Decimal('-3.5') + self.stab_radius, Decimal('-9') + self.stab_radius, 180, 270))
-			corners.append((Decimal('3.5') - self.stab_radius, Decimal('-9') + self.stab_radius, 270, 360))
-			
-		elif (self.stab_type == "alps-aek" or self.stab_type == "alps-at101"):
-			# Rectangles 2.67 wide, 5.21 high.
-			
-			line_segments.append((Decimal('-1.335') + self.stab_radius, Decimal('-3.875'), Decimal('1.335') - self.stab_radius, Decimal('-3.875')))
-			line_segments.append((Decimal('-1.335') + self.stab_radius, Decimal('-9.085'), Decimal('1.335') - self.stab_radius, Decimal('-9.085')))
-			line_segments.append((Decimal('-1.335'), Decimal('-3.875') - self.stab_radius, Decimal('-1.335'), Decimal('-9.085') + self.stab_radius))
-			line_segments.append((Decimal('1.335'), Decimal('-3.875') - self.stab_radius, Decimal('1.335'), Decimal('-9.085') + self.stab_radius))
-			
-			corners.append((Decimal('-1.335') + self.stab_radius, Decimal('-3.875') - self.stab_radius, 90, 180))
-			corners.append((Decimal('1.335') - self.stab_radius, Decimal('-3.875') - self.stab_radius, 0, 90))
-			corners.append((Decimal('-1.335') + self.stab_radius, Decimal('-9.085') + self.stab_radius, 180, 270))
-			corners.append((Decimal('1.335') - self.stab_radius, Decimal('-9.085') + self.stab_radius, 270, 360))		
-			
-		else:
-			print("Unsupported stab type.", file=sys.stderr)
-			print("Stab types: mx-simple, large-cuts, alps-aek, alps-at101", file=sys.stderr)
-			#exit(1)
-			return(2)
-			
-		for line in line_segments:
-			self.draw_rotated_line(x + Decimal(str(line[0])), y + Decimal(str(line[1])), x + Decimal(str(line[2])), y + Decimal(str(line[3])), anchor_x, anchor_y, angle)
-			
-		for arc in corners:
-			self.draw_rotated_arc(x + Decimal(str(arc[0])), y + Decimal(str(arc[1])), anchor_x, anchor_y, self.stab_radius, arc[2], arc[3], angle)
 			
 	# Acoustics cuts maker
 
 	def make_acoustic_cutout(self, x, y, anchor_x, anchor_y, angle):
-			
-		line_segments = []
-		corners = []
 		
-		if (self.cutout_type == "mx" or self.cutout_type == "alps"):
-			
-			line_segments.append((Decimal('-1') + self.acoustics_radius, (self.cutout_height / Decimal('2')), Decimal('1') - self.acoustics_radius, (self.cutout_height / Decimal('2'))))
-			line_segments.append((Decimal('-1') + self.acoustics_radius, (self.cutout_height / -Decimal('2')), Decimal('1') - self.acoustics_radius, (self.cutout_height / -Decimal('2'))))
-			line_segments.append((Decimal('-1'), (self.cutout_height / Decimal('2')) - self.acoustics_radius, Decimal('-1'), (self.cutout_height / -Decimal('2')) + self.acoustics_radius))
-			line_segments.append((Decimal('1'), (self.cutout_height / Decimal('2')) - self.acoustics_radius, Decimal('1'), (self.cutout_height / -Decimal('2')) + self.acoustics_radius))
-			
-			corners.append((Decimal('-1') + self.acoustics_radius, (self.cutout_height / Decimal('2')) - self.acoustics_radius, 90, 180))
-			corners.append((Decimal('1') - self.acoustics_radius, (self.cutout_height / Decimal('2')) - self.acoustics_radius, 0, 90))
-			corners.append((Decimal('-1') + self.acoustics_radius, (self.cutout_height / -Decimal('2')) + self.acoustics_radius, 180, 270))
-			corners.append((Decimal('1') - self.acoustics_radius, (self.cutout_height / -Decimal('2')) + self.acoustics_radius, 270, 360))
-			
-		for line in line_segments:
-			self.draw_rotated_line(x + Decimal(str(line[0])), y + Decimal(str(line[1])), x + Decimal(str(line[2])), y + Decimal(str(line[3])), anchor_x, anchor_y, angle)
-			
-		for arc in corners:
-			self.draw_rotated_arc(x + Decimal(str(arc[0])), y + Decimal(str(arc[1])), anchor_x, anchor_y, self.stab_radius, arc[2], arc[3], angle)
 		
 			
 	# Calls make stab cutout based on unit width and style
@@ -326,8 +273,11 @@ class PlateGenerator(object):
 				self.make_stab_cutout(center_x + Decimal('50'), center_y, center_x, center_y, angle)
 				self.make_stab_cutout(center_x - Decimal('50'), center_y, center_x, center_y, angle)
 			elif (unitwidth == 6): 
-				self.make_stab_cutout(center_x + Decimal('38.1'), center_y, center_x, center_y, angle)
-				self.make_stab_cutout(center_x - Decimal('57.15'), center_y, center_x, center_y, angle)
+				#self.make_stab_cutout(center_x + Decimal('38.1'), center_y, center_x, center_y, angle)
+				#self.make_stab_cutout(center_x - Decimal('57.15'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x - Decimal('47.625'), center_y, center_x, center_y, angle)
+				self.make_stab_cutout(center_x - Decimal('47.625'), center_y, center_x, center_y, angle)
+				
 			elif (unitwidth >= 3): 
 				self.make_stab_cutout(center_x + Decimal('19.05'), center_y, center_x, center_y, angle)
 				self.make_stab_cutout(center_x - Decimal('19.05'), center_y, center_x, center_y, angle)
@@ -374,106 +324,50 @@ class PlateGenerator(object):
 			elif (unitwidth >= 1.75): 
 				self.make_stab_cutout(center_x + Decimal('12'), center_y, center_x, center_y, angle)
 				self.make_stab_cutout(center_x - Decimal('12'), center_y, center_x, center_y, angle)
-		
+				
+	def place_switch_cutouts(self, switch):
+	
+		# Handle 6U
+		if (switch.width == 6):
+			coord = self.rotate_point_around_anchor(switch.coord_x + Decimal("9.525"), switch.coord_y, switch.coord_x, switch.coord_y, switch.rot_angle)
+	
+		# Place switch object
+		self.modelspace.add_blockref('SWITCH_CUTOUT', (switch.coord_x, switch.coord_y), dxfattribs={
+			'xscale': 1,
+			'yscale': 1,
+			'rotation': switch.rot_angle
+		})
 
-	# Draw switch cutout
-	def draw_switch_cutout(self, x, y, angle):
 	
-		line_segments = []
-		corners = []
-		
-		anchor_x = x;
-		anchor_y = y;
-	
-		if (self.cutout_type == "mx" or self.cutout_type == "alps" or self.cutout_type == "omron"):
-			
-			line_segments.append(((self.cutout_width / -Decimal('2')) + self.cutout_radius, (self.cutout_height / Decimal('2')), (self.cutout_width / Decimal('2')) - self.cutout_radius, (self.cutout_height / Decimal('2'))))
-			line_segments.append(((self.cutout_width / -Decimal('2')) + self.cutout_radius, (self.cutout_height / -Decimal('2')), (self.cutout_width / Decimal('2')) - self.cutout_radius, (self.cutout_height / -Decimal('2'))))
-			line_segments.append(((self.cutout_width / -Decimal('2')), (self.cutout_height / Decimal('2')) - self.cutout_radius, (self.cutout_width / -Decimal('2')), (self.cutout_height / -Decimal('2')) + self.cutout_radius))
-			line_segments.append(((self.cutout_width / Decimal('2')), (self.cutout_height / Decimal('2')) - self.cutout_radius, (self.cutout_width / Decimal('2')), (self.cutout_height / -Decimal('2')) + self.cutout_radius))
-			
-			corners.append(((self.cutout_width / -Decimal('2')) + self.cutout_radius, (self.cutout_height / Decimal('2')) - self.cutout_radius, 90, 180))
-			corners.append(((self.cutout_width / Decimal('2')) - self.cutout_radius, (self.cutout_height / Decimal('2')) - self.cutout_radius, 0, 90))
-			corners.append(((self.cutout_width / -Decimal('2')) + self.cutout_radius, (self.cutout_height / -Decimal('2')) + self.cutout_radius, 180, 270))
-			corners.append(((self.cutout_width / Decimal('2')) - self.cutout_radius, (self.cutout_height / -Decimal('2')) + self.cutout_radius, 270, 360))
-			
-			for line in line_segments:
-				self.draw_rotated_line(x + Decimal(str(line[0])), y + Decimal(str(line[1])), x + Decimal(str(line[2])), y + Decimal(str(line[3])), anchor_x, anchor_y, angle)
-				
-			for arc in corners:
-				self.draw_rotated_arc(x + Decimal(str(arc[0])), y + Decimal(str(arc[1])), anchor_x, anchor_y, self.stab_radius, arc[2], arc[3], angle)
-		
-		# TODO: Add switchtop removal cutouts, hardcoded radius to 0.5
-		#elif (self.cutout_type == "mx-topremoval-simple"):
-		#	line_segments.append((-Decimal('7.80') + self.cutout_radius, -Decimal('7')), (Decimal('7.80') - self.cutout_radius, -Decimal('7')))
-		
-	# Use the functions above to render an entire switch - Cutout, stabs, and all
-	def render_switch(self, switch):
-	
-		mm_x = Decimal('0')
-		mm_y = Decimal('0')
-		
-		# Coord differs for regular vs rotated
-		if (switch.rotx != 0 or switch.roty != 0 or switch.angle != 0):
-			# rotx and roty are the raw base coords for anchor
-			# Then, upper left is offset from there
-			mm_x = (switch.rotx + switch.offset_x) * self.unit_width
-			mm_y = (-switch.roty - switch.offset_y) * self.unit_height
-			
-			# Confirmed coords are correct at this point
-			# Something going haywire after this
-			
-		else:
-			# Otherwise, derive mm based on x and y in units
-			mm_x = switch.x * self.unit_width
-			mm_y = switch.y * self.unit_height
-			
-		# Then, derive the center of the switch based on width and height
-		mm_center_x = mm_x + ((switch.width / Decimal('2')) * self.unit_width)
-		mm_center_y = mm_y - ((switch.height / Decimal('2')) * self.unit_height)
-		
-		# Then, rotate the points if angle != 0
-		if (switch.angle != Decimal('0')):
-		
-			# This part is the issue
-		
-			rotated_upper_left_coords = self.rotate_point_around_anchor(mm_x, mm_y, (switch.rotx * self.unit_width), -(switch.roty * self.unit_height), switch.angle)
-			rotated_central_coords = self.rotate_point_around_anchor(mm_center_x, mm_center_y, (switch.rotx * self.unit_width), -(switch.roty * self.unit_height), switch.angle)
-			
-			mm_x = rotated_upper_left_coords[0]
-			mm_y = rotated_upper_left_coords[1]
-			
-			mm_center_x = rotated_central_coords[0]
-			mm_center_y = rotated_central_coords[1]
-			
-			# Do some calculations to see if a rotated switch exceeds current max boundaries
-			
-			unrotated_x = (switch.rotx + switch.offset_x) * self.unit_width
-			unrotated_y = (-switch.roty - switch.offset_y) * self.unit_height
-			
-			corners = []
-			corners.append((unrotated_x, unrotated_y))
-			corners.append((unrotated_x + (switch.width * self.unit_width), unrotated_y))
-			corners.append((unrotated_x, unrotated_y - (switch.height * self.unit_height)))
-			corners.append((unrotated_x + (switch.width * self.unit_width), unrotated_y - (switch.height * self.unit_height)))
-			
-			for corner in corners:
-				rotated_corner = self.rotate_point_around_anchor(corner[0], corner[1], mm_center_x, mm_center_y, switch.angle)
-				
-				if (rotated_corner[0] > self.max_width):
-					self.max_width = rotated_corner[0];
-				if (rotated_corner[1] < self.max_height):
-					self.max_height = rotated_corner[1];
-				
-		# Draw main switch cutout
-		self.draw_switch_cutout(mm_center_x, mm_center_y, switch.angle + switch.cutout_angle)
-		
 		# Adjust width for vertically tall keys, and generate stabs
 		apparent_width = switch.width;
 		if (switch.width < switch.height):
 			apparent_width = switch.height;
+			switch.stab_angle += Decimal("90");
 		
 		self.generate_stabs(mm_center_x, mm_center_y, switch.angle + switch.stab_angle, apparent_width)
+
+	def render_switch(self, switch):
+	
+		# First, generate the switch's coord variables based on other fields
+		
+		# If non-rotated, use regular x/y_var
+		if (switch.rotated_zone == False):
+			
+			switch.coord_x = self.unit_width * switch.x_var;
+			switch.coord_y = self.unit_height * switch.y_var;
+			
+		# Otherwise, do some magic with rotation fields
+		else:
+			
+			coords = rotate_point_around_anchor(switch.rot_x_offset, switch.rot_y_offset, switch.rot_anchor_x, switch.rot_anchor_y, switch.rot_angle)
+			switch.coord_x = coords[0] * self.unit_width;
+			switch.corod_y = coords[1] * self.unit_height;
+		
+		# TODO: self.max_width and self.max_height
+		
+		# Draw cutouts
+		self.place_switch_cutouts(switch)
 		
 
 	# Generate switch cutout sizes
@@ -516,6 +410,11 @@ class PlateGenerator(object):
 			return 6
 		if (self.acoustics_radius < 0 or self.acoustics_radius > 5):
 			return 7
+		if (self.stab_type != "mx-simple" and self.stab_type != "large-cuts" and self.stab_type != "alps-aek" and self.stab_type != "alps-at101"):
+			print("Unsupported stab type.", file=sys.stderr)
+			print("Stab types: mx-simple, large-cuts, alps-aek, alps-at101", file=sys.stderr)
+			#exit(1)
+			return(8)
 		
 			
 		return 0

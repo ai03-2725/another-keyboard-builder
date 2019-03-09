@@ -71,6 +71,9 @@ def receive_data():
 	elif (out_code == 7):
 		flash("Acoustic cutout fillet radius must be between 0 and 5.")
 		return render_template('base.html')
+	elif (out_code == 8):
+		flash("Unsupported stabilizer type.")
+		return render_template('base.html')
 	elif (out_code != 0):
 		flash("Unspecified error.")
 		return render_template('base.html')

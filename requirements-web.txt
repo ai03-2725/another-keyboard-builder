@@ -1,7 +1,7 @@
 Click==7.0
 ezdxf==0.8.8
 Flask==1.0.2
-Jinja2==2.10
+Jinja2>=2.10.1
 json5==0.6.1
 MarkupSafe==1.0
 mpmath==1.0.0

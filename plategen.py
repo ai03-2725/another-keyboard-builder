@@ -43,7 +43,7 @@ class PlateGenerator(object):
 		self.plate = ezdxf.new(dxfversion='AC1024')
 		self.modelspace = self.plate.modelspace()
 
-		# Cutout type: mx, alps
+		# Cutout type: mx, mx-slightly-wider, alps
 		self.cutout_type = arg_ct
 
 		# Cutout radius: The fillet radius ( 0 <= x <= 1/2 cutout width or height )
@@ -373,9 +373,9 @@ class PlateGenerator(object):
 		
 		anchor_x = x;
 		anchor_y = y;
-	
-		if (self.cutout_type == "mx" or self.cutout_type == "alps" or self.cutout_type == "omron"):
 			
+
+		if (self.cutout_type == "mx" or self.cutout_type == "mx-slightly-wider" or self.cutout_type == "alps" or self.cutout_type == "omron"):
 			line_segments.append(((self.cutout_width / -Decimal('2')) + self.cutout_radius, (self.cutout_height / Decimal('2')), (self.cutout_width / Decimal('2')) - self.cutout_radius, (self.cutout_height / Decimal('2'))))
 			line_segments.append(((self.cutout_width / -Decimal('2')) + self.cutout_radius, (self.cutout_height / -Decimal('2')), (self.cutout_width / Decimal('2')) - self.cutout_radius, (self.cutout_height / -Decimal('2'))))
 			line_segments.append(((self.cutout_width / -Decimal('2')), (self.cutout_height / Decimal('2')) - self.cutout_radius, (self.cutout_width / -Decimal('2')), (self.cutout_height / -Decimal('2')) + self.cutout_radius))
@@ -478,6 +478,9 @@ class PlateGenerator(object):
 	def initialize_variables(self):
 		if (self.cutout_type == "mx"):
 			self.cutout_width = Decimal('14');
+			self.cutout_height = Decimal('14');
+		elif (self.cutout_type == "mx-slightly-wider"):
+			self.cutout_width = Decimal('15');
 			self.cutout_height = Decimal('14');
 		elif (self.cutout_type == "alps"):
 			self.cutout_width = Decimal('15.50');
@@ -807,7 +810,7 @@ if __name__ == "__main__":
 	
 	# Note: The args will be fed into Decimal(), which takes strings
 	
-	parser.add_argument("-ct", "--cutout-type", help="Switch cutout type. Supported: mx, alps, omron; Default: mx", type=str, default='mx')
+	parser.add_argument("-ct", "--cutout-type", help="Switch cutout type. Supported: mx, mx-slightly-wider, alps, omron; Default: mx", type=str, default='mx')
 	parser.add_argument("-cr", "--cutout-radius", help="Switch cutout fillet radius. Default: 0.5", type=str, default='0.5')
 	parser.add_argument("-st", "--stab-type", help="Stabilizer type. Supported: mx-simple, large-cuts, alps-aek, alps-at101; Default: mx-simple", type=str, default='mx-simple')
 	parser.add_argument("-sr", "--stab-radius", help="Stabilizer cutout fillet radius. Default: 0.5", type=str, default='0.5')

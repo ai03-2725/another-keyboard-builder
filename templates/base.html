@@ -42,34 +42,12 @@
       <div class="container-fluid" style="max-width: 768px;">
         <div class="navbar-header">
           <img src="img/navbar/dropdown.png" type="button" class="navbar-toggle" height="40px" data-toggle="collapse" data-target="#navbar" style="border-color: transparent; margin: 5px;"></img>
-          <a class="navbar-brand" href="#"><img src="img/navbar/logo.png" style="height: 100%;"/></a>
+          <a class="navbar-brand" href="https://ai03.com/"><img src="img/navbar/logo.png" style="height: 100%;"/></a>
         </div>
 
         <div class="collapse navbar-collapse" id="navbar">
-          <p class="navbar-text collapse navbar-collapse" style="">ai03 Keyboards</p>
           <ul class="nav navbar-nav">
-			<li><a href="https://kb.ai03.me/index.html">Home</a></li>
-			<li class="dropdown">
-				<a class="dropdown-toggle" data-toggle="dropdown" href="#">Projects
-				<span class="caret"></span></a>
-				<ul class="dropdown-menu">
-					<li><a href="https://kb.ai03.me/projects/index.html">All</a></li>
-					<li><a href="https://kb.ai03.me/projects/index.html#keyboards">Keyboards</a></li>
-					<li><a href="https://kb.ai03.me/projects/index.html#pcbs">PCBs</a></li>
-					<li><a href="https://kb.ai03.me/projects/index.html#kicad">KiCad</a></li>
-					<li><a href="https://kb.ai03.me/tools/index.html">Tools</a></li>
-				</ul>
-			</li>
-			<li class="dropdown">
-				<a class="dropdown-toggle" data-toggle="dropdown" href="#">Tools
-				<span class="caret"></span></a>
-				<ul class="dropdown-menu">
-					<li><a href="https://kbwiki.ai03.me">Wiki</a></li>
-					<li><a href="https://kbplate.ai03.me">Plate Generator</a></li>
-				</ul>
-			</li>
-            <li><a href="https://discord.gg/qA5JD9y">Discord</a></li>
-			<li><a href="https://www.ai03.me">Back to ai03.me</a></li>
+			<li><a href="https://ai03.com/">Back to main site</a></li>
           </ul>
         </div>
       </div>
@@ -97,25 +75,36 @@
 			
 		</div>
 
+		<hr/>
+		<br/>
+
 		<div class="row text-center" style="width: 90%; max-width: 1024px; margin: auto; margin-top: 15px">
 		
 		  <form id="plateDataForm" action="/plategen" method="post" role="form">
 
 			<div class="form-group" style="margin: auto;">
-				<h3 for="kle-data">KLE Raw Data</h3>
-				<button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#infoKLEfields">
-					Important Info
-				</button>
-				<br/>
-				<br/>
-				<textarea type="text" class="form-control" id="kle-data" name="kle-data" placeholder="Paste raw data here" rows="5" required></textarea>
+				<div class="row">
+					<div class="col-sm-3">
+						<h3 for="kle-data">KLE Raw Data</h3>
+						<button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#infoKLEfields">
+							Important Info
+						</button>
+					</div>
+					<div class="col-sm-9">
+						<textarea type="text" class="form-control" id="kle-data" name="kle-data" placeholder="Paste raw data here" rows="6" required></textarea>
+					</div>
+				</div>
 			</div>
+
+			<br/>
+			<hr/>
+			
 			
 			<div class="row" style="margin-top:30px">
 			
 				<div class="col-sm-4">
 					<h2>Cutout Selection</h2>
-					<p>The most important part.</p>
+					<p>Default values are recommended.</p>
 				
 					<label for="cutout-type" style="margin-top: 30px">Switch Cutout Type 
 					<button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#infoCutoutType">
@@ -134,8 +123,8 @@
 					</button>
 					</label>
 					<select id="stab-type" name="stab-type" class="form-control form-control-lg">
-						<option selected value="mx-simple">MX - Simple</option>
-						<option value="large-cuts">MX - Large Cutouts</option>
+						<option value="mx-simple">MX - Simple</option>
+						<option selected value="large-cuts">MX - Large Cutouts</option>
 						<option value="alps-aek">Alps - AEK (2.25U wire on right shift)</option>
 						<option value="alps-at101">Alps - AT101 (2.75U wire on right shift)</option>
 					</select>
@@ -154,7 +143,7 @@
 			
 				<div class="col-sm-4">
 					<h2>Filleting</h2>
-					<p>Recommended 0.5~1mm for CNC, 1mm for laser-cutting.</p>
+					<p>Recommended 0.5mm; larger radii can cause issues with part fitment.</p>
 					<div class="form-group" style="margin: auto; margin-top: 30px;">
 					  <label for="cutout-radius">Switch Cutout Fillet Radius</label>
 					  <input style="width: 80%; margin: auto;" type="text" class="form-control" id="cutout-radius" name="cutout-radius" value="0.5" placeholder="Radius, mm" required></input>

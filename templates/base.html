@@ -27,9 +27,10 @@
     <meta name="theme-color" content="#202020">
 
     <!-- All the Bootstrap stuff -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.0/lux/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
 
     <!-- Other header content -->
     <title>ai03 - Keyboard Plate Generator</title>
@@ -38,20 +39,20 @@
 
   <body style="background-size: cover;">
     <!-- Navbar -->
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container-fluid" style="max-width: 768px;">
-        <div class="navbar-header">
-          <img src="img/navbar/dropdown.png" type="button" class="navbar-toggle" height="40px" data-toggle="collapse" data-target="#navbar" style="border-color: transparent; margin: 5px;"></img>
-          <a class="navbar-brand" href="https://ai03.com/"><img src="img/navbar/logo.png" style="height: 100%;"/></a>
-        </div>
-
-        <div class="collapse navbar-collapse" id="navbar">
-          <ul class="nav navbar-nav">
-			<li><a href="https://ai03.com/">Back to main site</a></li>
-          </ul>
-        </div>
-      </div>
-    </nav>
+	<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+		<a href="https://ai03.com/" class="navbar-left"><img src="/img/navbar/logo.png" width=32px style="margin-left: 16px; margin-right: 16px;"></a>		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+		  <span class="navbar-toggler-icon"></span>
+		</button>
+	  
+		<div class="collapse navbar-collapse" id="navbarColor01">
+		  <ul class="navbar-nav mr-auto">
+			<li class="nav-item">
+				<a class="nav-link" href="https://ai03.com/">Back to main site</a>
+			</li>
+		  </ul>
+		  
+		</div>
+	  </nav>
 
     <!-- Body content -->
     <!-- The complex styling is to make the container fill vertical space accounting for navbar/padding for navbar -->
@@ -75,18 +76,21 @@
 			
 		</div>
 
-		<hr/>
-		<br/>
 
-		<div class="row text-center" style="width: 90%; max-width: 1024px; margin: auto; margin-top: 15px">
+
+		<div class="row text-center justify-content-center" style="margin: auto; margin-top: 15px">
 		
 		  <form id="plateDataForm" action="/plategen" method="post" role="form">
+
+			<br/>
+			<hr/>
+			<br/>
 
 			<div class="form-group" style="margin: auto;">
 				<div class="row">
 					<div class="col-sm-3">
-						<h3 for="kle-data">KLE Raw Data</h3>
-						<button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#infoKLEfields">
+						<h3 for="kle-data" style="margin-top: 15px;">KLE Raw Data</h3>
+						<button style="margin-top: 15px; margin-bottom: 30px;" type="button" class="btn btn-primary" data-toggle="modal" data-target="#infoKLEfields">
 							Important Info
 						</button>
 					</div>
@@ -106,23 +110,23 @@
 					<h2>Cutout Selection</h2>
 					<p>Default values are recommended.</p>
 				
-					<label for="cutout-type" style="margin-top: 30px">Switch Cutout Type 
-					<button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#infoCutoutType">
+					<label for="cutout-type" style="margin-top: 30px;">Switch Cutout Type 
+					<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#infoCutoutType">
 						Info
 					</button>
 					</label>
-					<select id="cutout-type" name="cutout-type" class="form-control form-control-lg">
+					<select id="cutout-type" name="cutout-type" class="form-control">
 						<option selected value="mx">MX</option>
 						<option value="alps">Alps</option>
 						<option value="omron">Omron</option>
 					</select>
 					
-					<label for="stab-type" style="margin-top: 30px">Stabilizer Cutout Type
-					<button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#infoStabType">
+					<label for="stab-type" style="margin-top: 30px">Stabilizer Cutout Type 
+					<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#infoStabType">
 						Info
 					</button>
 					</label>
-					<select id="stab-type" name="stab-type" class="form-control form-control-lg">
+					<select id="stab-type" name="stab-type" class="form-control">
 						<option value="mx-simple">MX - Simple</option>
 						<option selected value="large-cuts">MX - Large Cutouts</option>
 						<option value="alps-aek">Alps - AEK (2.25U wire on right shift)</option>
@@ -130,11 +134,11 @@
 					</select>
 					
 					<label for="acoustic-type" style="margin-top: 30px">Acoustic Cutout Type
-					<button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#infoAcousticType">
+					<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#infoAcousticType">
 						Info
 					</button>
 					</label>
-					<select id="acoustic-type" name="acoustic-type" class="form-control form-control-lg">
+					<select id="acoustic-type" name="acoustic-type" class="form-control">
 						<option selected value="none">None</option>
 						<option value="typical">Typical</option>
 						<option value="extreme">Extreme</option>

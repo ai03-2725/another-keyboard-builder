@@ -1,0 +1,16 @@
+#  conda env create -f environment.yml
+#  conda env update -f environment.yml
+#
+name: akb
+channels:
+  - defaults
+dependencies:
+  - pyparsing==2.2.2
+  - mpmath==1.0.0
+  - pip
+  - pylint
+  - rope
+  - pip: 
+    - json5==0.6.1
+    - ezdxf==0.8.8
+ 

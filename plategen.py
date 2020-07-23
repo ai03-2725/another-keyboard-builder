@@ -259,10 +259,12 @@ class PlateGenerator(object):
 			corners.append((Decimal('1.335') - self.stab_radius, Decimal('-3.875') - self.stab_radius, 0, 90))
 			corners.append((Decimal('-1.335') + self.stab_radius, Decimal('-9.085') + self.stab_radius, 180, 270))
 			corners.append((Decimal('1.335') - self.stab_radius, Decimal('-9.085') + self.stab_radius, 270, 360))		
-			
+		elif (self.stab_type == "none"):
+			pass
+
 		else:
 			print("Unsupported stab type.", file=sys.stderr)
-			print("Stab types: mx-simple, large-cuts, alps-aek, alps-at101", file=sys.stderr)
+			print("Stab types: mx-simple, large-cuts, alps-aek, alps-at101, none", file=sys.stderr)
 			#exit(1)
 			return(2)
 			

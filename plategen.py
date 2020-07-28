@@ -453,14 +453,15 @@ class PlateGenerator(object):
 	
 		all_switches = kle.parse(json_data)
 		# end loop over rows, all_switches set 
-		if True:
+		
+		if False:
 			kle.dbg_plot()
 			
-			out_file_name = 'all_switch.csv'
-			with open(out_file_name, 'w') as f:
-				for switch in all_switches:
-					f.write(switch.to_csv() + '\n')
-				print("Generated "+out_file_name)		
+			# out_file_name = 'all_switch.csv'
+			# with open(out_file_name, 'w') as f:
+			# 	for switch in all_switches:
+			# 		f.write(switch.to_csv() + '\n')
+			# 	print("Generated "+out_file_name)		
 		
 		# Render each one by one. 
 		for switch in all_switches:
@@ -479,7 +480,6 @@ class PlateGenerator(object):
 		pii = (kle.min_width, kle.min_height)
 		pxi = (kle.max_width, kle.min_height)
 
-		# TODO
 		self.modelspace.add_line(pix, pxx)
 		self.modelspace.add_line(pii, pxi)
 		self.modelspace.add_line(pix, pii)

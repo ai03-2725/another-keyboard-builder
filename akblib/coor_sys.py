@@ -16,7 +16,7 @@ class CoorSys:
 		self.unit_width = unit_width
 		self.unit_height = unit_height
 
-		self.r = self.set_angle(r)
+		self.r = self.set_angle(Decimal('-1') * r)
 
 	def get_global(self, x_val, y_val):
 		"""Returns actual position in global coorinate system.

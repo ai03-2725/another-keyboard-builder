@@ -2,14 +2,14 @@ import unittest
 from decimal import Decimal, getcontext
 import math  # for PI
 
-from akblib.row_coordinate_system import RowCoordianteSystem
+from akblib.kle_reader import KLE_Reader
 from plategen import PlateGenerator 
 
 class TestRowCoordianteSystem(unittest.TestCase):
 
     @unittest.skip("check this later")
     def test_simple_init(self):
-        lcs = RowCoordianteSystem('1.0', '2.0', '0')
+        lcs = KLE_Reader('1.0', '2.0', '0')
 
         pos = lcs.get_local()
         self.assertEqual(pos[0], Decimal('0'))
@@ -35,7 +35,7 @@ class TestRowCoordianteSystem(unittest.TestCase):
         prec_orig = getcontext().prec
         getcontext().prec = 10
 
-        lcs = RowCoordianteSystem('1.0', '2.0', '30')
+        lcs = KLE_Reader('1.0', '2.0', '30')
         # sin(30deg) = 1/2
         self.assertEqual( lcs.s, Decimal('.5'))
         
@@ -65,12 +65,12 @@ class TestRowCoordianteSystem(unittest.TestCase):
         
 
 
-        """   
+        """
         prec_orig = getcontext().prec
         getcontext().prec = 1
 
 
-        left_thumb = RowCoordianteSystem(rx='6.5', ry='4.25', angle='30', x='1', y='-1')
+        left_thumb = KLE_Reader(rx='6.5', ry='4.25', angle='30', x='1', y='-1')
         pos_LX1 = left_thumb.get_global()
 
         self.assertEqual(Decimal('7.5'), pos_LX1[0])
@@ -83,7 +83,7 @@ class TestRowCoordianteSystem(unittest.TestCase):
 
 
         # [{r:-30,rx:13,y:-1,x:-3},"RX1","RX2"],
-        right_thumb = RowCoordianteSystem(rx='6.5', ry='4.25', angle='-30', x='-3', y='-1')
+        right_thumb = KLE_Reader(rx='6.5', ry='4.25', angle='-30', x='-3', y='-1')
 
 
 
@@ -112,12 +112,12 @@ class TestRowCoordianteSystem(unittest.TestCase):
         """
 
         # start with  
-        lcs = RowCoordianteSystem('1.0', '2.0', '30')
+        lcs = KLE_Reader('1.0', '2.0', '30')
 
 
     def test_trigonometric_funcions(self):
         """Check sin and cos."""
-        rcs = RowCoordianteSystem()
+        rcs = KLE_Reader()
         self.assertEqual(rcs.val_cos, Decimal('1'))
 
         rcs.set_angle("30")
@@ -145,7 +145,7 @@ class TestRowCoordianteSystem(unittest.TestCase):
             pass
 
         all_keys = {}
-        rcs = RowCoordianteSystem()
+        rcs = KLE_Reader()
         for row in json_data:
             for key in row:
                 sw = rcs.next(key)

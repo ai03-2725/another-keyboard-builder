@@ -26,30 +26,21 @@ class Switch:
 
         self.label = re.sub(r'[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_]+', '', label)
 
-
-        # self.rotx = 0
-        # self.roty = 0
         self.angle = coor_sys.r
 
         self.cutout_angle = 0
         self.stab_angle = 0
-        # self.offset_x = 0
-        # self.offset_y = 0
 
         # # data in global / DXF coordinate system
-        # Upper left coner
         self.mm = self.coor_sys.get_global(x_var, y_var)
 
         # rotation center
         self.mm_center = self.coor_sys.get_global(x_var + self.width * Decimal('.5'), y_var + self.height * Decimal('.5'))
 
-        # diagonal element
-        _nn = self.coor_sys.get_global(x_var + self.width, y_var + self.height)
-
         self.corners = [self.mm,
-                        (_nn[0], self.mm[1]),
-                        _nn,
-                        (self.mm[0], _nn[1])]
+                        self.coor_sys.get_global(x_var + self.width, y_var),
+                        self.coor_sys.get_global(x_var + self.width, y_var + self.height),
+                        self.coor_sys.get_global(x_var, y_var + self.height)]
 
         logger.info(" New key '{}' at ({:6.3},{:6.3})".format(self.label, self.mm[0], self.mm[1]))
         return

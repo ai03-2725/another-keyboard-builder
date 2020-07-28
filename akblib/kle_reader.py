@@ -54,8 +54,6 @@ class PropAllSwitch():
 		for r_xy in PropAllSwitch.KEYS_rot_orig:
 			if r_xy in prop_dict:
 				setattr(self, r_xy, Decimal(prop_dict[r_xy]))
-			else:
-				setattr(self, r_xy, Decimal('0'))
 
 		# process next keys
 		for prop, val in prop_dict.items():
@@ -248,6 +246,11 @@ class KLE_Reader(object):
 		"""
 		self.prop_next.parse(prop_dict)
 		self.prop_all.parse(prop_dict)
+
+		if 'rx' in prop_dict or 'rx' in prop_dict:
+			self.act_x = Decimal('0')
+			self.act_y = Decimal('0')
+
 		return
 
 
@@ -344,14 +347,14 @@ class KLE_Reader(object):
 			for c in (0, 1, 2, 3, 0, 2, 3, 1):
 				x.append( sw.corners[c][0])
 				y.append( sw.corners[c][1])
-# manually close again
-			
-			
 			
 			plt.plot(x,y)
 			plt.text(sw.mm_center[0], sw.mm_center[1], sw.label,
 				 horizontalalignment='center',verticalalignment='center')
-		# plt.axis('scaled')	
+		file_name='foo.png'
+		
+		plt.savefig(file_name)
+		print("Generated " + file_name)
 		plt.show()
 		return
 

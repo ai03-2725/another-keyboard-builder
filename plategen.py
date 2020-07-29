@@ -25,6 +25,7 @@ import ezdxf
 import sys
 import json5
 import argparse
+import logging
 from akblib.kle_reader import KLE_Reader
 from akblib.switch import Switch
 from mpmath import *
@@ -88,14 +89,18 @@ class PlateGenerator(object):
 
 		# Tell user everything about what's going on and spam the console?
 		self.debug_log = arg_db
-
+		if self.debug_log:
+			logging.basicConfig(level=logging.DEBUG)
+		else:
+			logging.basicConfig(level=logging.ERROR)
 		# Runtime vars that are often systematically changed or reset
 
 		# Cutout sizes
 		self.cutout_width = Decimal('0')
 		self.cutout_height = Decimal('0')
 
-		# Used for parsing
+		self.dbg_png = False  # no generation of png by default
+
 		
 	#=================================#
 	#            Classes              #
@@ -454,15 +459,9 @@ class PlateGenerator(object):
 		all_switches = kle.parse(json_data)
 		# end loop over rows, all_switches set 
 		
-		if False:
+		if self.dbg_png:
 			kle.dbg_plot()
-			
-			# out_file_name = 'all_switch.csv'
-			# with open(out_file_name, 'w') as f:
-			# 	for switch in all_switches:
-			# 		f.write(switch.to_csv() + '\n')
-			# 	print("Generated "+out_file_name)		
-		
+
 		# Render each one by one. 
 		for switch in all_switches:
 			self.render_switch(switch)

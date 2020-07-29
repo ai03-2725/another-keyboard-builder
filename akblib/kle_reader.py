@@ -4,15 +4,13 @@ from akblib.switch import Switch
 from akblib.coor_sys import CoorSys
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
-# logging.basicConfig(level=logging.ERROR)
 
 
 class PropAllSwitch():
 
 	KEYS_rot_orig = ('rx', 'ry')
 	"""Rotation point, handled special in update().
-	
+
 	rx current_rotx
 	ry current_roty
 	r current_angle
@@ -30,7 +28,7 @@ class PropAllSwitch():
 
 	KEYS_all_keycap_bool = ('g')
 	"""properties apply only to the next keycap only. as boolean."""
-	
+
 	def __init__(self):
 		self.reset()
 
@@ -47,9 +45,8 @@ class PropAllSwitch():
 
 		Args:
 			prop_dict(dict): Properties for next key only:
-		
+
 		"""
-		# assumption: rx and ry can only occurs together, so if on is not set, 
 		# init by origin
 		for r_xy in PropAllSwitch.KEYS_rot_orig:
 			if r_xy in prop_dict:
@@ -65,7 +62,7 @@ class PropAllSwitch():
 			elif prop == "r":
 				self.set_angle(val)
 		# TODO bool values
-		return	
+		return
 
 
 class PropNextSwitch():
@@ -99,7 +96,7 @@ class PropNextSwitch():
 
 		Args:
 			prop_dict(dict): Properties for next key only:
-		
+
 		"""
 		# process next keys
 		for prop, val in prop_dict.items():
@@ -134,25 +131,25 @@ class KLE_Reader(object):
 		* after rx, ry, r is set this is an rotated koordinate system
 
 		+---------> X
-		|      )    
+		|      )
 		|     )
 		|    \/  alpha
 		| Y
 		\/
 
 
-	DXF Coordinate sytem 
+	DXF Coordinate sytem
 	--------------------
 
 		* unit mm
 		* x to right
 		* y up
-	
+
 		/\ Y
-		|    
-		|  
-		| 
-		| 
+		|
+		|
+		|
+		|
 		+---------> X
 
 
@@ -167,9 +164,9 @@ class KLE_Reader(object):
 	https://github.com/ijprest/keyboard-layout-editor/wiki/Serialized-Data-Format
 
 
-	    x, y (number)
-	            These specify x and y values to be added to the current coordinates.
-	            For example, specifying x = 1 will leave a 1.0x gap between the previous key and the next one.
+		x, y (number)
+				These specify x and y values to be added to the current coordinates.
+				For example, specifying x = 1 will leave a 1.0x gap between the previous key and the next one.
 		UNDOCUMENTED
 		------------
 		r       used as rotation angle glocckwise starting horizontal
@@ -177,11 +174,11 @@ class KLE_Reader(object):
 
 	"""
 
-	def __init__(self, unit_width=Decimal('19.05'), unit_height=Decimal('19.05'),  ):
+	def __init__(self, unit_width=Decimal('19.05'), unit_height=Decimal('19.05')):
 		"""Set up all references."""
 		self.prop_next = PropNextSwitch()
 		self.prop_all = PropAllSwitch()
-		# koordintes in (optional rotated) KLE coordinate system
+		# coordintes in (optional rotated) KLE coordinate system
 		self.act_x = Decimal('0')
 		self.act_y = Decimal('0')
 		self.debug_log = False
@@ -190,7 +187,7 @@ class KLE_Reader(object):
 
 		# self.kle_coorsys = CoorSys()
 
-		self.all_switches = list()
+		self.all_switches = []
 		"""all switches are after call of self.parse() in this list."""
 
 		return
@@ -203,20 +200,20 @@ class KLE_Reader(object):
 
 		"""
 		if isinstance(o, str):  # New Key
-		
-			# update local position for  next keycap 
+
+			# update local position for  next keycap
 			self.act_x += self.prop_next.x
 			self.act_y += self.prop_next.y
 
 			# new coordinate system for the key...
 			_coor_sys = CoorSys(r=self.prop_all.r,
-			 					rx=self.prop_all.rx,
+								rx=self.prop_all.rx,
 								ry=self.prop_all.ry,
 								unit_width=self.unit_width,
 								unit_height=self.unit_height)
-	
+
 			sw = Switch(coor_sys=_coor_sys,
-			 			x_var=self.act_x, 
+						x_var=self.act_x,
 						y_var=self.act_y,
 						width=self.prop_next.w,
 						height=self.prop_next.h, label=o)
@@ -231,12 +228,12 @@ class KLE_Reader(object):
 			# reset properties for next switch only
 			self.prop_next.reset()
 
-			return sw 
+			return sw
 		elif isinstance(o, dict):
 			self.update_properties(o)
 		else:
 			raise ValueError("RowCoordianteSystem.next() can be only str or dictObject is not a list")
-		
+
 	def update_properties(self, prop_dict):
 		"""Update coordinate system by propertiews
 
@@ -253,7 +250,6 @@ class KLE_Reader(object):
 
 		return
 
-
 	def get_local(self):
 		"""Returns actual position in local / rotated coorinate system.
 
@@ -261,54 +257,46 @@ class KLE_Reader(object):
 			(Decimal, Decimal): x and y position in local coordinate system
 
 		"""
-		return (self.act_x , self.act_y)
+		return (self.act_x, self.act_y)
 
-	def new_row(self, reset_rot_coordinate=False):
+	def new_row(self):
 		"""Start a new row of the coor."""
-		self.act_x = 0 
+		self.act_x = 0
 		self.act_y += 1
-		
-		if reset_rot_coordinate:
-			self.prop_all.r  = Decimal('0')
-			self.prop_all.rx = Decimal('0')
-			self.prop_all.ry = Decimal('0')
-			self.set_angle() # reset angle to zero...
-
 
 	def parse(self, json_data):
 		"""Parse JSON and return list of switches.
 
 		Calculates min/max of width and height
 
-		Args: 
+		Args:
 			json_data(json): KLE json data.
-		
+
 		Returns:
 			List[Switch]: all switches in a list
 		"""
-		
+
 		self.min_width = Decimal('1.e10')
-		self.max_width = -self.min_width 
+		self.max_width = -self.min_width
 		self.min_height = Decimal('1.e10')
 		self.max_height = -self.min_height
 
-
 		for row in json_data:
-			if (self.debug_log):
-				print (">>> ROW BEGIN")
-				print (str(row))
-			
+			if self.debug_log:
+				print(">>> ROW BEGIN")
+				print(str(row))
+
 			# KLE standard supports first row being metadata.
 			# If it is, ignore.
 			if isinstance(row, dict):
 				if (self.debug_log):
-					print ("!!! Row is metadata. Skip.")
+					print("!!! Row is metadata. Skip.")
 				continue
-			
+
 			for key in row:
 
 				current_switch = self.next(key)
-				
+
 				if current_switch:  # only append switches, not keys...
 					self.all_switches.append(current_switch)
 
@@ -333,28 +321,36 @@ class KLE_Reader(object):
 			self.new_row()
 		return self.all_switches
 
-	def dbg_plot(self):
-		"""Debug plot of the corners.""" 
+	def dbg_plot(self, gui=False):
+		"""Debug plot of the corners."""
 		import matplotlib.pyplot as plt
+		import pathlib
 		# first plot extremas
-		x = [ self.min_width, self.max_width, self.max_width, self.min_width, self.min_width]
-		y = [ self.max_height, self.max_height, self.min_height, self.min_height, self.max_height]
-	
-		plt.plot(x,y)
+		x = [self.min_width, self.max_width, self.max_width, self.min_width, self.min_width]
+		y = [self.max_height, self.max_height, self.min_height, self.min_height, self.max_height]
+
+		plt.clf()
+		plt.plot(x, y)
 		for sw in self.all_switches:
 			x = []
 			y = []
 			for c in (0, 1, 2, 3, 0, 2, 3, 1):
-				x.append( sw.corners[c][0])
-				y.append( sw.corners[c][1])
-			
-			plt.plot(x,y)
-			plt.text(sw.mm_center[0], sw.mm_center[1], sw.label,
-				 horizontalalignment='center',verticalalignment='center')
-		file_name='foo.png'
-		
-		plt.savefig(file_name)
-		print("Generated " + file_name)
-		plt.show()
-		return
+				x.append(sw.corners[c][0])
+				y.append(sw.corners[c][1])
 
+			plt.plot(x, y)
+			plt.text(sw.mm_center[0], sw.mm_center[1], sw.label,
+					horizontalalignment='center', verticalalignment='center')
+
+		write_dir = pathlib.Path(__file__).parent.parent / 'test-writedir'
+		# loop to find filename for a new file
+		for i in range(999):
+			file_name = write_dir / 'plt_{:03d}.png'.format(i)
+			if not file_name.exists():
+				break
+
+		plt.savefig(file_name)
+		print("Generated " + file_name.as_uri())
+		if gui:
+			plt.show()
+		return

@@ -373,9 +373,10 @@ class PlateGenerator(object):
 		
 		anchor_x = x;
 		anchor_y = y;
-			
 
-		if (self.cutout_type == "mx" or self.cutout_type == "mx-slightly-wider" or self.cutout_type == "alps" or self.cutout_type == "omron"):
+		standard_cutout_types = ["mx", "mx-slightly-wider", "alps", "omron", "kailh-choc-CPG1350", "kailh-choc-mini-CPG1232"]			
+
+		if (self.cutout_type in standard_cutout_types):
 			line_segments.append(((self.cutout_width / -Decimal('2')) + self.cutout_radius, (self.cutout_height / Decimal('2')), (self.cutout_width / Decimal('2')) - self.cutout_radius, (self.cutout_height / Decimal('2'))))
 			line_segments.append(((self.cutout_width / -Decimal('2')) + self.cutout_radius, (self.cutout_height / -Decimal('2')), (self.cutout_width / Decimal('2')) - self.cutout_radius, (self.cutout_height / -Decimal('2'))))
 			line_segments.append(((self.cutout_width / -Decimal('2')), (self.cutout_height / Decimal('2')) - self.cutout_radius, (self.cutout_width / -Decimal('2')), (self.cutout_height / -Decimal('2')) + self.cutout_radius))
@@ -488,6 +489,14 @@ class PlateGenerator(object):
 		elif (self.cutout_type == "omron"):
 			self.cutout_width = Decimal('13.50');
 			self.cutout_height = Decimal('13.50');
+		elif (self.cutout_type == "kailh-choc-CPG1350"):
+                        # Datasheet lists 13.8x13.8 with no tolerances, so
+                        # using tolerances off choc-mini datasheet
+			self.cutout_width = Decimal('13.82');
+			self.cutout_height = Decimal('13.82');
+		elif (self.cutout_type == "kailh-choc-mini-CPG1232"):
+			self.cutout_width = Decimal('13.52');
+			self.cutout_height = Decimal('12.52');
 		else:
 			print("Unsupported cutout type.", file=sys.stderr)
 			print("Supported: mx, alps, omron", file=sys.stderr)

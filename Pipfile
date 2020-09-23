@@ -1,0 +1,24 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+# MarkupSafe uses Feature from setuptools which was removed in 46.0.0
+# https://github.com/pypa/setuptools/issues/2017
+setuptools = "==45"
+
+[packages]
+ezdxf = "==0.8.8"
+pyparsing = "==2.2.2"
+json5 = "==0.6.1"
+mpmath = "==1.0.0"
+click = "==7.0"
+Flask = "==1.0.2"
+Jinja2 = ">=2.10.1"
+MarkupSafe = "==1.0"
+Werkzeug = "==0.15.3"
+setuptools = "==45"
+
+[requires]
+python_version = "3.7"

@@ -244,7 +244,7 @@ class KLE_Reader(object):
 		self.prop_next.parse(prop_dict)
 		self.prop_all.parse(prop_dict)
 
-		if 'rx' in prop_dict or 'rx' in prop_dict:
+		if 'rx' in prop_dict or 'ry' in prop_dict:
 			self.act_x = Decimal('0')
 			self.act_y = Decimal('0')
 

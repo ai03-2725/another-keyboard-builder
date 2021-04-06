@@ -376,7 +376,7 @@ class PlateGenerator(object):
 		anchor_x = x;
 		anchor_y = y;
 
-		standard_cutout_types = ["mx", "mx-slightly-wider", "alps", "omron", "kailh-choc-CPG1350", "kailh-choc-mini-CPG1232"]			
+		standard_cutout_types = ["mx", "mx-slightly-wider", "alps", "alps-skcp", "omron", "kailh-choc-CPG1350", "kailh-choc-mini-CPG1232"]			
 
 		if (self.cutout_type in standard_cutout_types):
 			line_segments.append(((self.cutout_width / -Decimal('2')) + self.cutout_radius, (self.cutout_height / Decimal('2')), (self.cutout_width / Decimal('2')) - self.cutout_radius, (self.cutout_height / Decimal('2'))))
@@ -488,6 +488,9 @@ class PlateGenerator(object):
 		elif (self.cutout_type == "alps"):
 			self.cutout_width = Decimal('15.50');
 			self.cutout_height = Decimal('12.80');
+		elif (self.cutout_type == "alps-skcp"):
+			self.cutout_width = Decimal('16');
+			self.cutout_height = Decimal('16');
 		elif (self.cutout_type == "omron"):
 			self.cutout_width = Decimal('13.50');
 			self.cutout_height = Decimal('13.50');
@@ -821,7 +824,7 @@ if __name__ == "__main__":
 	
 	# Note: The args will be fed into Decimal(), which takes strings
 	
-	parser.add_argument("-ct", "--cutout-type", help="Switch cutout type. Supported: mx, mx-slightly-wider, alps, omron; Default: mx", type=str, default='mx')
+	parser.add_argument("-ct", "--cutout-type", help="Switch cutout type. Supported: mx, mx-slightly-wider, alps, alps-skcp, omron; Default: mx", type=str, default='mx')
 	parser.add_argument("-cr", "--cutout-radius", help="Switch cutout fillet radius. Default: 0.5", type=str, default='0.5')
 	parser.add_argument("-st", "--stab-type", help="Stabilizer type. Supported: mx-simple, large-cuts, alps-aek, alps-at101; Default: mx-simple", type=str, default='mx-simple')
 	parser.add_argument("-sr", "--stab-radius", help="Stabilizer cutout fillet radius. Default: 0.5", type=str, default='0.5')

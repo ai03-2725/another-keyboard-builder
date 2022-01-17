@@ -1,8 +1,14 @@
 # Another Keyboard Builder
 An exact mechanical keyboard plate creator that doesn't result in 13.99999mm cutouts
 
-## Use it here:
-[kbplate.ai03.me](http://kbplate.ai03.me/)
+---
+
+# This project is obsolete
+This server-side plategen has been succeeded by a client-side revision.  
+The successor can be viewed [here](https://github.com/ai03-2725/yet-another-keyboard-builder).  
+This project will be archived for the time being.  
+
+---
 
 ## Why?
 - Alternate generators don't have either the features or exactness that designers need.

@@ -112,3 +112,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+# test generated files
+test-writedir/*
+testout.dxf
